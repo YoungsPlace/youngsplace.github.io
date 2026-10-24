@@ -1,9 +1,8 @@
 # 집요한사람 · 공부 아카이브
 
 블로그: https://youngsplace.github.io/  
-인스타그램: https://www.instagram.com/jipyohansaram/
 
-사진과 코드, 논문과 실험을 담는 한국어 블로그입니다. Blowfish 기반이며, 인스타그램의 검정·아이보리·골드 색감을 반영했습니다.
+사진과 코드, 논문과 실험을 담는 한국어 블로그입니다. Blowfish 기반이며, 검정·아이보리·골드 색감을 사용합니다.
 
 ## GitHub에서 글 쓰기
 
