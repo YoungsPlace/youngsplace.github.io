@@ -3,7 +3,7 @@ title: "배운 것을,
 내 것으로 만드는 기록."
 description: "공부 아카이브. 사진과 코드, 논문과 실험을 기록합니다."
 ---
-<div class="brand-kicker">STUDY NOTES · LEARNING ARCHIVE</div>
+<div class="brand-kicker">YOUNGSPLACE · LEARNING ARCHIVE</div>
 
 읽고 끝내지 않기. 이해한 것을 내 언어로 남기기.  
 사진과 코드, 논문과 실험을 오가며 쌓아가는 공부의 기록입니다.
