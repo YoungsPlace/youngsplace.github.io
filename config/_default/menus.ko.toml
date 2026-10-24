@@ -1,0 +1,16 @@
+[[main]]
+name = "공부 노트"
+pageRef = "notes"
+weight = 10
+[[main]]
+name = "논문 리뷰"
+pageRef = "papers"
+weight = 20
+[[main]]
+name = "사진 기록"
+pageRef = "journal"
+weight = 30
+[[main]]
+name = "소개"
+pageRef = "about"
+weight = 40
