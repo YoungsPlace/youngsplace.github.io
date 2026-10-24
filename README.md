@@ -1,4 +1,4 @@
-# 집요한사람 · 공부 아카이브
+# Study Notes · 공부 아카이브
 
 블로그: https://youngsplace.github.io/  
 
@@ -6,7 +6,7 @@
 
 ## GitHub에서 글 쓰기
 
-1. `content/notes`(공부), `content/papers`(논문), `content/journal`(사진) 중 하나를 엽니다.
+1. `content/local-ai-models-on-a-mac`(스터디), `content/notes`(공부), `content/papers`(논문), `content/journal`(사진) 중 하나를 엽니다.
 2. Add file → Create new file을 누르고 `글이름/index.md`로 만듭니다.
 3. 아래 형식으로 작성한 뒤 Commit changes로 저장합니다. 자동 게시에 잠시 시간이 걸립니다.
 
@@ -43,3 +43,9 @@ hugo server -D
 새 글: `hugo new content papers/논문이름/index.md`. 빌드: `hugo --minify`.
 
 테마는 공식 MIT 라이선스에 따라 사용합니다. 테마 원본과 라이선스: https://github.com/nunocoracao/blowfish
+
+## Local AI Models on a Mac
+
+스터디 기록: https://youngsplace.github.io/local-ai-models-on-a-mac/
+
+1주차 글은 아직 작성하지 않았습니다. 다음에 이 폴더에 첫 글을 추가하면 됩니다.
