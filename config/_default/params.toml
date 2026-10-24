@@ -1,0 +1,37 @@
+colorScheme = "avocado"
+defaultAppearance = "dark"
+autoSwitchAppearance = false
+enableSearch = true
+enableCodeCopy = true
+mainSections = ["notes", "papers", "journal"]
+[header]
+layout = "fixed-fill-blur"
+[footer]
+showCopyright = true
+showThemeAttribution = true
+showAppearanceSwitcher = true
+showScrollToTop = true
+[homepage]
+layout = "page"
+showRecent = true
+showRecentItems = 6
+cardView = true
+showMoreLink = false
+[article]
+showDate = true
+showAuthor = false
+showReadingTime = true
+showTableOfContents = true
+showTaxonomies = true
+showPagination = true
+showRelatedContent = true
+relatedContentLimit = 3
+showBreadcrumbs = true
+showHero = true
+heroStyle = "basic"
+showZenMode = true
+[list]
+showSummary = true
+cardView = true
+showCards = true
+groupByYear = false
