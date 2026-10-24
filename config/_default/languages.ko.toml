@@ -3,7 +3,6 @@ label = "한국어"
 weight = 1
 title = "YoungsPlace"
 [params]
-logo = "img/kbbangzoo-logo.svg"
 displayName = "KO"
 isoCode = "ko"
 dateFormat = "2006.01.02"
