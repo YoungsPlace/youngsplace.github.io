@@ -15,4 +15,3 @@ description: "집요한사람의 공부 아카이브. 사진과 코드, 논문�
 <a href="/journal/"><div class="brand-index">03 / OBSERVE</div><b>사진 기록</b><span>눈에 담은 장면과 배운 것들.</span></a>
 </div>
 
-[Instagram ↗](https://www.instagram.com/jipyohansaram/)
