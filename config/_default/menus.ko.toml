@@ -23,3 +23,17 @@ weight = 40
 name = "글쓰기 안내"
 pageRef = "notes/writing-guide"
 weight = 10
+
+[[main]]
+identifier = "github"
+pre = "github"
+title = "GitHub"
+url = "https://github.com/YoungsPlace"
+weight = 50
+
+[[main]]
+identifier = "linkedin"
+pre = "linkedin"
+title = "LinkedIn"
+url = "https://www.linkedin.com/in/youngjoo-kim94/"
+weight = 60
