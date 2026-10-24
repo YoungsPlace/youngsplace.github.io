@@ -14,5 +14,5 @@ description: "공부 아카이브. 사진과 코드, 논문과 실험을 기록�
 <a href="/notes/"><div class="brand-index">02 / LEARN</div><b>공부 노트</b><span>개념과 코드, 직접 해본 실험.</span></a>
 <a href="/papers/"><div class="brand-index">03 / READ</div><b>논문 리뷰</b><span>핵심 질문부터 나의 해석까지.</span></a>
 <a href="/journal/"><div class="brand-index">04 / OBSERVE</div><b>사진 기록</b><span>눈에 담은 장면과 배운 것들.</span></a>
+<a class="brand-library" href="/books/"><div class="brand-index">05 / READ & REMEMBER</div><b>서재</b><span>읽은 책과, 책장을 덮고도 남은 생각들.</span></a>
 </div>
-

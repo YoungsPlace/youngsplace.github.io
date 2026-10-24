@@ -37,3 +37,8 @@ pre = "linkedin"
 title = "LinkedIn"
 url = "https://www.linkedin.com/in/youngjoo-kim94/"
 weight = 60
+
+[[main]]
+name = "서재"
+pageRef = "books"
+weight = 35

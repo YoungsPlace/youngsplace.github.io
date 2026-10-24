@@ -5,3 +5,38 @@ body{font-family:"Apple SD Gothic Neo","Noto Sans KR",sans-serif;letter-spacing:
 .main-menu>a{font-weight:800}.main-menu>a::after{content:".";color:rgb(var(--color-primary-400));font-size:1.4em}
 .brand-kicker{font-size:.72rem;letter-spacing:.16em;color:rgb(var(--color-primary-600));margin-bottom:1.6rem}.dark .brand-kicker{color:rgb(var(--color-primary-300))}
 .brand-rule{height:1px;background:rgba(var(--color-neutral-500),.3);margin:2rem 0}.brand-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:2rem 0}.brand-grid a{padding:1.5rem;border:1px solid rgba(var(--color-neutral-500),.25);text-decoration:none!important}.brand-grid b{display:block;font-size:1.25rem;margin:.8rem 0}.brand-grid span{font-size:.85rem;color:rgb(var(--color-neutral-500))}.brand-index{color:rgb(var(--color-primary-500));font-size:.75rem;letter-spacing:.08em}@media(max-width:640px){.brand-grid{grid-template-columns:1fr}.brand-grid a{padding:1.1rem}}
+
+/* Reading room: warm paper, book cloth, and a quiet shelf. */
+.reading-room{--shelf-line:rgba(var(--color-neutral-500),.25);--shelf-muted:rgb(var(--color-neutral-500));max-width:960px;margin:1.5rem auto 3rem}
+.dark .reading-room{--shelf-muted:rgb(var(--color-neutral-400))}
+.reading-intro{padding:1rem 0 2.4rem;border-bottom:1px solid var(--shelf-line)}
+.reading-eyebrow{font-size:.65rem;letter-spacing:.2em;color:rgb(var(--color-primary-600));margin:0 0 1.6rem}
+.dark .reading-eyebrow{color:rgb(var(--color-primary-300))}
+.reading-intro h1{font-family:"Iowan Old Style","Noto Serif KR","AppleMyungjo",serif;font-size:clamp(3rem,7vw,4.6rem);font-weight:500;letter-spacing:-.06em;line-height:1.2;margin:0 0 1.4rem}
+.reading-description{font-size:1rem;line-height:1.9;color:var(--shelf-muted)}
+.reading-count{display:block;margin-top:1.7rem;font-size:.72rem;letter-spacing:.06em;color:var(--shelf-muted)}
+.reading-empty{text-align:center;padding:4rem 1rem 3.5rem;border-bottom:1px solid var(--shelf-line)}
+.reading-spines{display:flex;align-items:flex-end;justify-content:center;gap:5px;width:210px;margin:0 auto 2.2rem;padding:0 15px 8px;border-bottom:2px solid rgba(var(--color-primary-500),.45)}
+.reading-spines i{display:block;width:27px;height:86px;background:#89836c;border-radius:2px 3px 0 0;border-left:3px solid #ffffff18;box-shadow:inset -2px 0 #00000020}
+.reading-spines i:nth-child(2){height:103px;width:33px;background:#b9a178}
+.reading-spines i:nth-child(3){height:91px;background:#626f68}
+.reading-spines i:nth-child(4){height:112px;width:23px;background:#b6aea0}
+.reading-spines i:nth-child(5){height:80px;background:#997a6d;transform:rotate(9deg);transform-origin:bottom left;margin-left:3px}
+.reading-empty p{font-size:.9rem;line-height:1.9;color:var(--shelf-muted)}
+.reading-empty .reading-empty-title{font-family:"Iowan Old Style","Noto Serif KR","AppleMyungjo",serif;font-size:1.45rem;color:inherit;margin-bottom:.8rem}
+.reading-colophon{font-family:"Iowan Old Style","Noto Serif KR","AppleMyungjo",serif;text-align:center;font-size:.8rem;color:var(--shelf-muted);margin-top:2rem}
+.reading-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3rem 2rem;padding:3rem 0}
+.reading-book{text-decoration:none;color:inherit;display:block}
+.reading-cover{height:260px;padding:20px;background:rgba(var(--color-neutral-500),.06);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--shelf-line)}
+.reading-cover img{height:100%;width:auto;max-width:100%;object-fit:contain;box-shadow:4px 6px 12px #00000024;transition:transform .2s}
+.reading-book:hover .reading-cover img{transform:translateY(-4px)}
+.reading-cover-fallback{height:100%;width:155px;background:#d5c9af;color:#37382f;padding:18px 15px;display:flex;flex-direction:column;justify-content:space-between;border-left:5px solid #00000012;box-shadow:4px 6px 12px #00000024}
+.reading-cover-fallback span{font-size:.5rem;letter-spacing:.16em}.reading-cover-fallback strong{font-family:"AppleMyungjo",serif;font-size:1.35rem;line-height:1.5;overflow-wrap:anywhere}.reading-cover-fallback small{font-size:.65rem}
+.reading-book-info{padding-top:1.2rem}.reading-book-date{font-size:.68rem;color:var(--shelf-muted)}
+.reading-book-info h2{font-family:"AppleMyungjo",serif;font-weight:500;font-size:1.2rem;line-height:1.6;margin:.4rem 0}
+.reading-book-author,.reading-book-summary{font-size:.78rem;line-height:1.8;color:var(--shelf-muted);margin:.25rem 0}
+.reading-book:focus-visible{outline:2px solid rgb(var(--color-primary-500));outline-offset:6px}
+.brand-grid a.brand-library{grid-column:1/-1}
+@media(max-width:760px){.reading-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:2rem 1rem}}
+@media(max-width:480px){.reading-grid{grid-template-columns:1fr}.reading-cover{height:280px}.reading-intro{padding-top:.5rem}.reading-eyebrow{font-size:.55rem}.reading-empty{padding:3rem .5rem}}
+@media(prefers-reduced-motion:reduce){.reading-cover img{transition:none}}

@@ -1,0 +1,41 @@
+{{ define "main" }}
+{{ .Scratch.Set "scope" "list" }}
+<section class="reading-room">
+  <header class="reading-intro">
+    <p class="reading-eyebrow">YOUNGSPLACE / THE READING ROOM</p>
+    <h1>{{ .Title }}</h1>
+    <div class="reading-description">{{ .Content }}</div>
+    <span class="reading-count">{{ len .RegularPages }}개의 독서 기록</span>
+  </header>
+  {{ if .RegularPages }}
+  <div class="reading-grid">
+    {{ range (.Paginate .RegularPages.ByDate.Reverse).Pages }}
+    <a class="reading-book" href="{{ .RelPermalink }}">
+      <div class="reading-cover">
+        {{ $cover := .Resources.GetMatch "feature*" }}
+        {{ if $cover }}
+          <img src="{{ $cover.RelPermalink }}" alt="{{ .Params.bookTitle | default .Title }} 표지" loading="lazy" />
+        {{ else }}
+          <div class="reading-cover-fallback"><span>READING NOTES</span><strong>{{ .Params.bookTitle | default .Title }}</strong>{{ with .Params.bookAuthor }}<small>{{ . }}</small>{{ end }}</div>
+        {{ end }}
+      </div>
+      <div class="reading-book-info">
+        <span class="reading-book-date">{{ .Date.Format "2006.01.02" }}{{ with .Params.readingStatus }} · {{ . }}{{ end }}</span>
+        <h2>{{ .Title }}</h2>
+        {{ with .Params.bookAuthor }}<p class="reading-book-author">{{ . }}</p>{{ end }}
+        {{ with .Description | default .Summary }}<p class="reading-book-summary">{{ . | plainify | truncate 100 }}</p>{{ end }}
+      </div>
+    </a>
+    {{ end }}
+  </div>
+  {{ partial "pagination.html" . }}
+  {{ else }}
+  <div class="reading-empty">
+    <div class="reading-spines" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    <p class="reading-empty-title">다음 책을 위한 자리.</p>
+    <p>마음에 남은 한 문장부터,<br>천천히 책장을 채워갑니다.</p>
+  </div>
+  {{ end }}
+  <p class="reading-colophon">한 권의 책, 하나의 오래 남을 기록.</p>
+</section>
+{{ end }}

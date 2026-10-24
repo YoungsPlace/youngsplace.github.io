@@ -59,6 +59,7 @@ content/
 | 공부 노트 | `content/notes` |
 | 논문 리뷰 | `content/papers` |
 | 사진 기록 | `content/journal` |
+| 서재 | `content/books` |
 
 폴더 이름은 **영문 소문자·숫자·하이픈**으로 정하면 주소와 파일 연결을 다루기 편하다. 제목은 한글로 자유롭게 써도 된다.
 
@@ -763,6 +764,43 @@ tags: ["사진 기록"]
 
 ## 다음에 살펴볼 것
 ```
+
+### 서재에 독서 기록 남기기
+
+상단 **서재** 메뉴에 쌓이는 독서 기록은 `content/books/책-이름/index.md`에 만든다. 책마다 폴더 하나를 만들고, 표지는 같은 폴더에 `feature.jpg`(또는 `feature.png`, `feature.webp`)로 올린다. 표지가 없으면 책 제목과 저자로 만든 책 모양이 대신 표시된다.
+
+아래 양식에서 제목·저자·날짜·한 줄 감상을 바꾼다. `readingStatus`에는 `읽는 중`, `완독`, `다시 읽는 중`처럼 지금 상태를 적으면 된다. `draft: true`와 비공개의 차이는 4번을 확인한다. 게시할 때 `draft: false`로 바꾸면 서재에 날짜순으로 나타난다.
+
+```markdown
+---
+title: "책장을 덮고 남은 생각"
+date: 2026-10-25
+draft: true
+bookTitle: "책 제목"
+bookAuthor: "저자 이름"
+readingStatus: "완독"
+description: "이 책이 나에게 남긴 것을 한 문장으로."
+tags: ["독서"]
+showHero: false
+showTableOfContents: true
+---
+
+## 이 책을 펼친 이유
+
+## 오래 남은 문장
+
+> 짧은 인용문 — 저자, p.00
+
+이 문장이 나에게 닿은 이유.
+
+## 책장을 덮고 남은 생각
+
+## 내 일상으로 가져갈 것
+```
+
+책 표지는 서재 카드에서 보이고 `showHero: false`이면 글 상단에는 크게 반복되지 않는다. 본문에도 넣고 싶으면 `![책 표지](feature.jpg)`를 쓴다. 원문 인용은 필요한 짧은 부분에 출처와 페이지를 함께 남기고, 내 감상과 구분한다.
+
+로컬에서 Hugo를 쓰는 경우 `hugo new content books/책-이름/index.md`로 준비된 독서 양식을 생성할 수 있다. `archetypes/books/index.md`가 그 원본이다.
 
 ## 17. Mac에서 완성 화면을 보며 쓰기
 
