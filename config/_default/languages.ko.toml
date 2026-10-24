@@ -1,0 +1,14 @@
+locale = "ko-KR"
+label = "한국어"
+weight = 1
+title = "집요한사람"
+[params]
+displayName = "KO"
+isoCode = "ko"
+dateFormat = "2006.01.02"
+description = "사진과 코드, 논문과 실험. 배운 것을 오래 남기는 공간."
+[params.author]
+name = "집요한사람"
+headline = "궁금한 건 깊게, 배운 건 오래."
+bio = "사진과 코드, 논문과 실험을 기록합니다."
+links = [{ instagram = "https://www.instagram.com/jipyohansaram/" }, { github = "https://github.com/YoungsPlace" }]
