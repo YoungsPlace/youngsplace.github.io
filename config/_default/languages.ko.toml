@@ -11,4 +11,4 @@ description = "사진과 코드, 논문과 실험. 배운 것을 오래 남기�
 name = "집요한사람"
 headline = "궁금한 건 깊게, 배운 건 오래."
 bio = "사진과 코드, 논문과 실험을 기록합니다."
-links = [{ instagram = "https://www.instagram.com/jipyohansaram/" }, { github = "https://github.com/YoungsPlace" }]
+links = [{ github = "https://github.com/YoungsPlace" }]
