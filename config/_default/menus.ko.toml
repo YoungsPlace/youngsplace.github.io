@@ -1,4 +1,8 @@
 [[main]]
+name = "Local AI Models on a Mac"
+pageRef = "local-ai-models-on-a-mac"
+weight = 5
+[[main]]
 name = "공부 노트"
 pageRef = "notes"
 weight = 10
