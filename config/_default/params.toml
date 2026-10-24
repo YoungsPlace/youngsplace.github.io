@@ -3,7 +3,7 @@ defaultAppearance = "dark"
 autoSwitchAppearance = false
 enableSearch = true
 enableCodeCopy = true
-disableTextInHeader = true
+disableTextInHeader = false
 mainSections = ["local-ai-models-on-a-mac", "notes", "papers", "journal"]
 [header]
 layout = "fixed-fill-blur"
