@@ -1,7 +1,7 @@
 ---
-title: "Study Notes"
+title: "YoungsPlace"
 ---
-사진과 코드, 논문과 실험을 함께 담는 공부 공간입니다.
+빵주(kbbangzoo)의 공부 기록 공간입니다. 사진과 코드, 논문과 실험을 함께 담습니다.
 
 - **Local AI Models on a Mac** — 로컬 AI 모델 스터디 기록
 - **공부 노트** — 개념, 코드, 직접 해본 실험
