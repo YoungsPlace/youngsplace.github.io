@@ -11,4 +11,4 @@ description = "사진과 코드, 논문과 실험. 배운 것을 오래 남기�
 name = "빵주(kbbangzoo)"
 headline = "궁금한 건 깊게, 배운 건 오래."
 bio = "사진과 코드, 논문과 실험을 기록합니다."
-links = [{ github = "https://github.com/YoungsPlace" }]
+links = [{ github = "https://github.com/YoungsPlace" }, { linkedin = "https://www.linkedin.com/in/youngjoo-kim94/" }]

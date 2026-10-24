@@ -8,6 +8,8 @@ description: "공부 아카이브. 사진과 코드, 논문과 실험을 기록�
 읽고 끝내지 않기. 이해한 것을 내 언어로 남기기.  
 사진과 코드, 논문과 실험을 오가며 쌓아가는 공부의 기록입니다.
 
+{{< social-links >}}
+
 <div class="brand-rule"></div>
 <div class="brand-grid">
 <a href="/local-ai-models-on-a-mac/"><div class="brand-index">01 / STUDY</div><b>Local AI Models on a Mac</b><span>Mac에서 로컬 AI 모델을 공부하는 스터디 기록.</span></a>

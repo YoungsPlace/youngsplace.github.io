@@ -8,3 +8,4 @@ title: "YoungsPlace"
 - **논문 리뷰** — 핵심 질문, 방법, 결과, 나의 해석
 - **사진 기록** — 관찰과 생각을 사진으로 남기기
 
+[GitHub에서 코드 보기](https://github.com/YoungsPlace) · [LinkedIn에서 경력·활동 보기](https://www.linkedin.com/in/youngjoo-kim94/)
