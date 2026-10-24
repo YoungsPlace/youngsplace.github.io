@@ -1,4 +1,4 @@
-# Study Notes · 공부 아카이브
+# YoungsPlace · 공부 아카이브
 
 블로그: https://youngsplace.github.io/  
 
