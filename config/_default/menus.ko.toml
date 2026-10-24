@@ -18,3 +18,8 @@ weight = 30
 name = "소개"
 pageRef = "about"
 weight = 40
+
+[[footer]]
+name = "글쓰기 안내"
+pageRef = "notes/writing-guide"
+weight = 10

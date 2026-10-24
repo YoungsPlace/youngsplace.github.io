@@ -4,6 +4,8 @@
 
 사진과 코드, 논문과 실험을 담는 한국어 블로그입니다. Blowfish 기반이며, 검정·아이보리·골드 색감을 사용합니다.
 
+자세한 사용법: [YoungsPlace 글쓰기 매뉴얼](https://youngsplace.github.io/notes/writing-guide/)
+
 ## GitHub에서 글 쓰기
 
 1. `content/local-ai-models-on-a-mac`(스터디), `content/notes`(공부), `content/papers`(논문), `content/journal`(사진) 중 하나를 엽니다.
@@ -26,7 +28,7 @@ math: true
 ## 다음에 확인할 것
 ```
 
-사진은 index.md와 같은 폴더에 업로드하고 `![사진 설명](photo.jpg)`로 넣습니다. 대표 사진은 `feature.jpg`로 저장합니다. 공개 전인 글은 `draft: true`로 두세요.
+사진은 index.md와 같은 폴더에 업로드하고 `![사진 설명](photo.jpg)`로 넣습니다. 대표 사진은 `feature.jpg`로 저장합니다. `draft: true`는 블로그에서만 제외하며, 공개 GitHub 저장소의 원본은 누구나 볼 수 있습니다. 비공개 초안은 Mac에만 보관하세요.
 
 논문 리뷰 작성 틀은 `archetypes/papers.md`에 있습니다. 수식·코드·그래프 예시는 블로그의 ‘이 블로그에 기록하는 방법’ 글을 참고하세요.
 
