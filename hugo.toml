@@ -1,0 +1,15 @@
+baseURL = "https://youngsplace.github.io/"
+theme = "blowfish"
+defaultContentLanguage = "ko"
+hasCJKLanguage = true
+enableRobotsTXT = true
+enableEmoji = true
+summaryLength = 100
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+[taxonomies]
+tag = "tags"
+category = "categories"
+series = "series"
+[pagination]
+pagerSize = 12
