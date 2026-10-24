@@ -3,12 +3,13 @@ defaultAppearance = "dark"
 autoSwitchAppearance = false
 enableSearch = true
 enableCodeCopy = true
+disableTextInHeader = true
 mainSections = ["local-ai-models-on-a-mac", "notes", "papers", "journal"]
 [header]
 layout = "fixed-fill-blur"
 [footer]
 showCopyright = true
-showThemeAttribution = true
+showThemeAttribution = false
 showAppearanceSwitcher = true
 showScrollToTop = true
 [homepage]
