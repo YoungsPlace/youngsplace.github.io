@@ -1,7 +1,7 @@
 ---
 title: "[1주차] Mac에서 로컬 AI 시작하기: 터미널, Homebrew, Ollama"
 date: 2026-10-25T00:00:00+09:00
-draft: true
+draft: false
 author: "빵주(kbbangzoo)"
 summary: "로컬 AI를 쓰는 이유부터 터미널 기본 명령어, Homebrew와 Ollama로 Gemma 3를 실행하는 흐름까지 정리한다."
 tags: ["로컬 AI", "Mac", "터미널", "Homebrew", "Ollama"]
@@ -11,11 +11,11 @@ showAuthor: true
 ---
 
 > **초안 메모**  
-> 스터디 노션과 1주차 미팅 녹화를 바탕으로 정리한 글이다. 아래 명령어는 실습 절차이며, 내 Mac에서 실행한 결과와 화면은 아직 추가하지 않았다. 녹화 속 시연과 나의 실습 결과는 구분해서 적었다.
+> 스터디 노션과 1주차 미팅 녹화를 바탕으로 정리한 글이다. 아래 명령어는 실습 절차이며, 내 Mac에서 실행한 결과와 화면은 아직 추가하지 않았다.
 
 AI 서비스를 사용하는 데서 한 걸음 더 나아가, 내 Mac에서 모델을 직접 실행해 보기로 했다. 이번 스터디에서는 『Build Applications with Local AI Models on a Mac』을 따라 로컬 AI 애플리케이션을 만들어 간다.
 
-1주차의 범위는 1~3장이다. 왜 로컬 AI를 쓰는지 이해하고, 터미널과 Homebrew에 익숙해진 뒤 Ollama를 준비한다. 스터디 자료에 포함된 4장 미리 실습에서는 `gemma3:4b` 모델을 내려받아 대화하는 흐름도 살펴본다. [1주차 자료](https://gasidaseo.notion.site/Entering-the-world-of-the-terminal-3ff50aec5edf80f59c36fd594a24a06e)
+1주차의 범위는 1~3장이다. 왜 로컬 AI를 쓰는지 이해하고, 터미널과 Homebrew에 익숙해진 뒤 Ollama를 준비한다. 스터디 자료에 포함된 4장 미리 실습에서는 `gemma3:4b` 모델을 내려받아 대화하는 흐름도 살펴본다.
 
 ## 1. 왜 AI를 내 컴퓨터에서 실행할까?
 
@@ -58,7 +58,7 @@ Apple Silicon의 통합 메모리는 CPU와 GPU가 같은 메모리 풀을 활�
 
 ## 3. 이번 스터디가 만들려는 애플리케이션
 
-최종 목표는 Mac 안에서 음성 입력을 받아 답하는 로컬 채팅 애플리케이션이다. 미팅 초반에 설명한 구성은 다음과 같다. 이 전체 기능을 1주차에 완성했다는 뜻은 아니다.
+최종 목표는 Mac 안에서 음성 입력을 받아 답하는 로컬 채팅 애플리케이션이다. 미팅 초반에 설명한 구성은 다음과 같다.
 
 ```text
 마이크 음성
@@ -160,15 +160,13 @@ ollama run gemma3:4b
 Hello! Who are you?
 ```
 
-녹화 약 49~52분 구간에서는 `gemma3:4b`를 실행해 영어 질문의 응답을 받고, 한국어 응답도 확인하는 시연이 나온다. 이는 진행자의 시연 결과이며 내 Mac의 실행 결과는 아니다.
-
 스터디에서 사용한 모델 태그는 `gemma3:4b`다. 다른 모델과 비교할 때도 태그를 함께 남겨야 같은 조건인지 확인할 수 있다. 모델의 실제 내려받기 용량은 사용하는 태그와 배포 파일에 따라 확인한다. [Gemma 3 모델 페이지](https://ollama.com/library/gemma3:4b)
 
 대화에서 나갈 때는 `/bye`를 입력한다. 이것은 **대화형 클라이언트 종료**이며, 별도 창에서 실행한 서버까지 종료하는 것은 아니다. 직접 `ollama serve`로 띄운 서버를 중지하려면 해당 창에서 `Ctrl+C`를 누른다.
 
 ## 7. 설치 성공과 모델 실행 성공을 따로 확인하기
 
-녹화 약 45~48분 구간에서는 서버 시작 로그와 추가 터미널에서의 요청 확인을 함께 보여 준다. 특히 `Listening on 127.0.0.1:11434`는 로컬 주소와 포트에서 요청을 기다린다는 의미다.
+서버 시작 로그와 추가 터미널에서의 요청 확인을 함께 보여 준다. 특히 `Listening on 127.0.0.1:11434`는 로컬 주소와 포트에서 요청을 기다린다는 의미다.
 
 실습 기록에서는 다음 상태를 구분해 두려 한다.
 
@@ -182,10 +180,9 @@ Hello! Who are you?
 
 ## 8. 내 실습 기록 — 실행 후 채울 부분
 
-아래 항목은 아직 측정하거나 확인하지 않았다. 실습을 마친 뒤 실제 값과 화면으로 교체할 예정이다.
-
 | 항목 | 내 기록 |
-| --- | --- |
+| --- | --- |<img width="269" height="445" alt="스크린샷 2026-10-25 오후 1 38 48" src="https://github.com/user-attachments/assets/5925caf8-fc0e-4f46-88d3-623b17c124bb" />
+
 | Mac 모델 / 칩 | 작성 예정 |
 | 메모리 / macOS 버전 | 작성 예정 |
 | Homebrew / Ollama 버전 | 작성 예정 |
@@ -194,6 +191,8 @@ Hello! Who are you?
 | 발생한 오류와 해결 과정 | 실행 후 기록 |
 
 추가할 화면은 세 가지다. **내 Mac 사양**, **모델 목록**, **첫 대화 결과**. 속도를 비교한다면 같은 질문과 설정을 사용하고, 측정하지 않은 수치는 적지 않는다.
+<img width="269" height="445" alt="spec_mac" src="https://github.com/user-attachments/assets/48793072-db45-4a7e-b5a0-3becda1a6f3b" />
+
 
 ## 이번 주 정리
 
@@ -202,10 +201,5 @@ Hello! Who are you?
 다음 실습에서는 같은 모델에 한국어 질문도 던져 보고, 어떤 응답이 나오는지 내 환경과 함께 남겨보려 한다. 이후 Python과 연결할 때도 서버와 클라이언트를 나눠 이해한 경험이 도움이 될 것 같다.
 
 ## 참고 자료
-
-- [스터디 전체 안내](https://gasidaseo.notion.site/Local-AI-Model-Study-3ff50aec5edf8065a64dea161b314b36)
-- [1주차: Entering the world of the terminal](https://gasidaseo.notion.site/Entering-the-world-of-the-terminal-3ff50aec5edf80f59c36fd594a24a06e)
 - [Homebrew](https://brew.sh/) · [명령어 문서](https://docs.brew.sh/Manpage)
 - [Ollama CLI](https://docs.ollama.com/cli) · [Gemma 3:4b](https://ollama.com/library/gemma3:4b)
-
-<!-- 편집 메모: local-ai-on-mac-1w.mp4(54:01)를 로컬 음성 인식으로 검토하고 45:50·50:15 시연 화면을 대조했다. 자동 전사의 용어 오류는 노션·공식 자료로 교차 확인했다. 타임스탬프는 탐색용 대략 범위이며 직접 인용은 사용하지 않았다. 녹화 링크·참석자 정보·화면 캡처는 공개 본문에 포함하지 않는다. -->
