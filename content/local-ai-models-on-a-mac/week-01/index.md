@@ -10,9 +10,6 @@ showTableOfContents: true
 showAuthor: true
 ---
 
-> **초안 메모**  
-> 스터디 노션과 1주차 미팅 녹화를 바탕으로 정리한 글이다. 아래 명령어는 실습 절차이며, 내 Mac에서 실행한 결과와 화면은 아직 추가하지 않았다.
-
 AI 서비스를 사용하는 데서 한 걸음 더 나아가, 내 Mac에서 모델을 직접 실행해 보기로 했다. 이번 스터디에서는 『Build Applications with Local AI Models on a Mac』을 따라 로컬 AI 애플리케이션을 만들어 간다.
 
 1주차의 범위는 1~3장이다. 왜 로컬 AI를 쓰는지 이해하고, 터미널과 Homebrew에 익숙해진 뒤 Ollama를 준비한다. 스터디 자료에 포함된 4장 미리 실습에서는 `gemma3:4b` 모델을 내려받아 대화하는 흐름도 살펴본다.
@@ -176,28 +173,27 @@ Hello! Who are you?
 4. 모델이 내려받아졌는가?
 5. 선택한 모델로 응답을 생성할 수 있는가?
 
-예를 들어 `ollama --version`이 보인다고 해서 모델까지 준비된 것은 아니다. 서버 연결 오류와 모델 다운로드 문제도 서로 다른 단계에서 발생한다. 문제가 생겼을 때는 실패한 명령어와 오류 메시지를 그대로 남기고, 어느 단계까지 성공했는지 함께 적어 두는 편이 좋다.
 
-## 8. 내 실습 기록 — 실행 후 채울 부분
+예를 들어 `ollama --version`이 보인다고 해서 모델까지 준비된 것은 아니다. 서버 연결 오류와 모델 다운로드 문제도 서로 다른 단계에서 발생한다. 
+문제가 생겼을 때는 실패한 명령어와 오류 메시지를 그대로 남기고, 어느 단계까지 성공했는지 함께 적어 두는 편이 좋다.
+
+## 8. 내 실습 기록
 
 | 항목 | 내 기록 |
 | --- | --- |
-| Mac 모델 / 칩 | 작성 예정 |
-| 메모리 / macOS 버전 | 작성 예정 |
-| Homebrew / Ollama 버전 | 작성 예정 |
-| 실행한 모델 태그 | 실행 후 기록 |
-| 첫 질문과 모델의 응답 | 실행 후 기록 |
-| 발생한 오류와 해결 과정 | 실행 후 기록 |
-
-추가할 화면은 세 가지다. **내 Mac 사양**, **모델 목록**, **첫 대화 결과**. 속도를 비교한다면 같은 질문과 설정을 사용하고, 측정하지 않은 수치는 적지 않는다.
-<img width="269" height="445" alt="spec_mac" src="https://github.com/user-attachments/assets/48793072-db45-4a7e-b5a0-3becda1a6f3b" />
-
+| Mac 모델 / 칩 | <img width="269" height="445" alt="spec_mac" src="https://github.com/user-attachments/assets/a9eeafb8-c93f-4749-937e-dccaba55b55e" /> |
+| 메모리 / macOS 버전 | <img width="428" height="179" alt="spec_mac_memory" src="https://github.com/user-attachments/assets/bec0e965-9bba-47c6-928a-165784aa0c90" /> |
+| Homebrew 버전 | <img width="549" height="197" alt="brew version" src="https://github.com/user-attachments/assets/09672fa0-7edc-4cb0-89ef-6d7ee576280f" /> |
+| Ollama 버전 | <img width="705" height="423" alt="ollama version" src="https://github.com/user-attachments/assets/594c129d-77eb-4c17-98d6-4b795d006fa9" /> |
+| 실행한 모델 태그 | <img width="672" height="169" alt="ollama model" src="https://github.com/user-attachments/assets/e7f2e3c9-086d-45af-a009-bf6f6a9b9848" /> |
+| 첫 질문과 모델의 응답 | <img width="823" height="488" alt="ollama 응답" src="https://github.com/user-attachments/assets/8f144a02-c6bb-48fe-9543-1ec7dcbac3cc" /> |
+| Ollama GPU 점유 확인 | <img width="661" height="46" alt="ollama gpu" src="https://github.com/user-attachments/assets/db857eda-9568-4cc0-bc20-55b4afbd11c6" /> |
 
 ## 이번 주 정리
 
 이번 주의 출발점은 모델의 성능 비교보다 **실행 환경의 구조를 이해하는 것**이다. 터미널로 작업 위치를 확인하고, Homebrew로 도구를 설치하고, Ollama 서버와 모델을 구분해서 실행한다.
-
 다음 실습에서는 같은 모델에 한국어 질문도 던져 보고, 어떤 응답이 나오는지 내 환경과 함께 남겨보려 한다. 이후 Python과 연결할 때도 서버와 클라이언트를 나눠 이해한 경험이 도움이 될 것 같다.
+본 스터디 외 시간에 내 Macbook에 맞는 더 좋은 모델을 사용해서 성능을 측정해보면, Codex Token 의존도를 조금은 낮출 수 있을 것 같다.
 
 ## 참고 자료
 - [Homebrew](https://brew.sh/) · [명령어 문서](https://docs.brew.sh/Manpage)
