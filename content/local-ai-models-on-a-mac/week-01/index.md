@@ -181,8 +181,7 @@ Hello! Who are you?
 ## 8. 내 실습 기록 — 실행 후 채울 부분
 
 | 항목 | 내 기록 |
-| --- | --- |<img width="269" height="445" alt="스크린샷 2026-10-25 오후 1 38 48" src="https://github.com/user-attachments/assets/5925caf8-fc0e-4f46-88d3-623b17c124bb" />
-
+| --- | --- |
 | Mac 모델 / 칩 | 작성 예정 |
 | 메모리 / macOS 버전 | 작성 예정 |
 | Homebrew / Ollama 버전 | 작성 예정 |
