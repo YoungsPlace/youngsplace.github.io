@@ -126,6 +126,14 @@ ollama list
 
 Ollama `0.40.11`이 `127.0.0.1:11434`에서 실행 중이다. 서버 로그에 `Apple M5 Pro`와 `Metal`이 표시됐고, 모델 목록에는 `gemma3:4b`가 `3.4 GB`로 나왔다. 모델 ID는 `68ceab7e468a`다.
 
+### 같은 질문, 다른 답변
+
+`gemma3:4b`에 `Hello! who are you?`를 두 번 입력했다. 첫 답변은 텍스트와 이미지를 입력받을 수 있다고 소개했고, 두 번째는 챗봇이라는 설명과 함께 이모지를 붙였다. 같은 질문 문구에 소개 방식과 표현이 달라졌다.
+
+![Gemma 3에 같은 질문을 두 번 입력했을 때의 응답](ollama-repeated-prompt.png)
+
+자료의 비결정성(nondeterministic) 설명과 연결해 살펴본 장면이다. 샘플링을 사용하는 생성에서는 다음 토큰을 확률에 따라 선택하며, `temperature`와 `seed` 등의 설정이 결과에 영향을 준다. 이 캡처는 같은 세션의 연속 대화여서 두 번째 응답에는 앞선 질문과 답변도 문맥으로 포함된다. [Ollama 생성 설정](https://docs.ollama.com/modelfile#valid-parameters-and-values)
+
 ## 4. Python 가상환경
 
 프로젝트마다 필요한 패키지와 버전이 다르다. 가상환경을 만들면 각 프로젝트의 Python 패키지를 나누어 관리할 수 있다.
