@@ -543,18 +543,34 @@ source .venv/bin/activate
 
 ### 패키지 설치와 환경 기록
 
-`ollama` 패키지를 설치한다. Streamlit은 이후 웹 화면을 만들 때 사용한다.
+`ollama`와 `streamlit` 패키지를 설치했다. Streamlit은 이후 웹 화면을 만들 때 사용한다.
 
 ```sh
 python -m pip install ollama
 python -m pip install streamlit
 ```
 
-설치된 패키지와 버전은 `requirements.txt`로 남긴다.
+`pip list`로 설치된 패키지와 버전을 확인하고, `requirements.txt`에 저장한 뒤 파일 내용을 확인했다.
 
 ```sh
-python -m pip freeze > requirements.txt
+pip list
+pip freeze > requirements.txt
+cat requirements.txt
 ```
+
+<div class="study-capture-pair">
+
+{{< figure src="pip-list.png" alt="가상환경에서 pip list로 확인한 설치 패키지와 버전 목록" caption="pip list" figureClass="study-capture study-capture--portrait" >}}
+
+{{< figure src="requirements-saved.png" alt="pip freeze로 requirements.txt를 저장하고 cat으로 파일 내용을 확인한 터미널" caption="requirements.txt" figureClass="study-capture study-capture--portrait" >}}
+
+</div>
+
+| 패키지 | 확인한 버전 |
+|---|---|
+| `ollama` | `0.6.3` |
+| `streamlit` | `1.66.1` |
+| `pip` | `26.2.2` |
 
 새 환경에서는 이 파일을 읽어 패키지를 설치한다.
 
