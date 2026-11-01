@@ -473,6 +473,14 @@ ollama run gemma3:4b "Write a Python function that returns the larger of two num
 
 ## 5. Python 가상환경
 
+Python을 설치하고 터미널에서 `Python 3.13.18`로 표시되는 것을 확인했다.
+
+```sh
+python3.13 --version
+```
+
+{{< figure src="python-version.png" alt="python3.13 --version 명령으로 Python 3.13.18 설치를 확인한 터미널" figureClass="study-capture" >}}
+
 프로젝트마다 필요한 패키지와 버전이 다르다. 가상환경을 만들면 각 프로젝트의 Python 패키지를 나누어 관리할 수 있다.
 
 {{< mermaid >}}
