@@ -110,6 +110,22 @@ flowchart TD
 
 `ollama ps`의 `PROCESSOR` 열에는 모델의 CPU·GPU 배치 상태가 표시된다. 실제 연산 중 GPU 이용률은 활동 상태 보기 등의 도구로 확인한다.
 
+### 서버 실행과 모델 목록
+
+한 터미널에서 서버를 실행하고, 다른 터미널에서 모델 목록을 조회했다.
+
+```sh
+ollama serve
+```
+
+```sh
+ollama list
+```
+
+![Ollama 서버 실행 로그와 gemma3:4b 모델 목록](ollama-serve-list.png)
+
+Ollama `0.40.11`이 `127.0.0.1:11434`에서 실행 중이다. 서버 로그에 `Apple M5 Pro`와 `Metal`이 표시됐고, 모델 목록에는 `gemma3:4b`가 `3.4 GB`로 나왔다. 모델 ID는 `68ceab7e468a`다.
+
 ## 4. Python 가상환경
 
 프로젝트마다 필요한 패키지와 버전이 다르다. 가상환경을 만들면 각 프로젝트의 Python 패키지를 나누어 관리할 수 있다.
