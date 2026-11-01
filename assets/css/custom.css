@@ -40,3 +40,8 @@ body{font-family:"Apple SD Gothic Neo","Noto Sans KR",sans-serif;letter-spacing:
 @media(max-width:760px){.reading-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:2rem 1rem}}
 @media(max-width:480px){.reading-grid{grid-template-columns:1fr}.reading-cover{height:280px}.reading-intro{padding-top:.5rem}.reading-eyebrow{font-size:.55rem}.reading-empty{padding:3rem .5rem}}
 @media(prefers-reduced-motion:reduce){.reading-cover img{transition:none}}
+
+/* Compact study screenshots; the theme keeps the original available for zoom. */
+.prose figure.study-capture{width:100%;max-width:520px;margin:1.5rem auto}
+.prose figure.study-capture--portrait{max-width:300px}
+.prose figure.study-capture img{display:block;width:100%;height:auto;margin:0}
