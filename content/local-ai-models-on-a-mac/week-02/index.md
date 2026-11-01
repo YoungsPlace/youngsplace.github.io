@@ -401,6 +401,78 @@ ollama show phi3:mini
 
 Phi의 `show`에 표시된 모델 컨텍스트 길이는 `131072`토큰이고, 조회 당시 `ps`의 실행 컨텍스트는 `32768`토큰이었다.
 
+### 집 정리하기
+
+연습용 모델로 `smollm2:135m`을 내려받고 한 문장으로 자기소개를 요청했다.
+
+```sh
+ollama pull smollm2:135m
+ollama run smollm2:135m
+```
+
+```text
+Introduce yourself in one sentence.
+```
+
+{{< figure src="smollm2-cleanup.png" alt="SmolLM2 다운로드, 자기소개 응답, 채팅 종료와 모델 삭제까지의 터미널 기록" figureClass="study-capture" >}}
+
+여러 분야의 일을 돕는 AI 도우미라고 한 문장으로 답했다. 채팅 중 입력한 `ollama ps`에도 모델이 문장으로 답했다.
+
+`/bye`로 채팅을 종료한 뒤 모델을 삭제했다.
+
+```sh
+ollama rm smollm2:135m
+ollama list
+```
+
+{{< figure src="model-list-after-cleanup.png" alt="SmolLM2 삭제 후 Phi, Qwen, Gemma 세 모델이 남은 ollama list 결과" figureClass="study-capture" >}}
+
+| 단계 | 기록 |
+|---|---|
+| 모델 다운로드 | `success` |
+| 질문과 응답 | 자기소개를 한 문장으로 요청하고 응답을 받았다. |
+| `ollama ps`로 로드 상태 확인 | [직접 기록] |
+| 대기 후 자동 언로드 확인 | [직접 기록] |
+| 모델 삭제 | `deleted 'smollm2:135m'` |
+| 삭제 후 목록 확인 | SmolLM2가 목록에서 사라지고 Phi, Qwen, Gemma가 남았다. |
+
+### 도전: 원샷 모드
+
+명령어 끝에 질문을 붙여 Gemma 3에 서로 다른 질문 다섯 개를 보냈다.
+
+```sh
+ollama run gemma3:4b "Summarize the plot of Romeo and Juliet in three sentences."
+ollama run gemma3:4b "Explain photosynthesis in two sentences."
+ollama run gemma3:4b "Translate 'I enjoy learning new things' into Korean."
+ollama run gemma3:4b "Give three tips for remembering English words."
+ollama run gemma3:4b "Write a Python function that returns the larger of two numbers."
+```
+
+| 요청 | 출력에서 본 점 |
+|---|---|
+| 로미오와 줄리엣 줄거리 세 문장 | 짧은 안내 문구 뒤 줄거리를 세 문장으로 출력했다. |
+| 광합성 두 문장 | 광합성 과정과 산소 방출을 두 문장으로 설명했다. |
+| 한국어 번역 | 번역 후보 세 가지와 로마자 표기, 단어와 표현에 관한 설명을 덧붙였다. |
+| 영어 단어 암기 팁 세 가지 | 연상법, 문장 속 활용, 간격 반복과 능동 회상을 세 항목으로 설명했다. |
+| 두 수 중 큰 값을 반환하는 Python 함수 | `find_larger(num1, num2)` 함수와 사용 예시, 코드 설명을 작성했다. |
+
+<details>
+<summary>원샷 응답 캡처 5개</summary>
+
+{{< figure src="oneshot-romeo-juliet.png" alt="Gemma 3의 로미오와 줄리엣 세 문장 요약 응답" caption="1. 줄거리 요약" figureClass="study-capture" >}}
+
+{{< figure src="oneshot-photosynthesis.png" alt="Gemma 3가 광합성을 두 문장으로 설명한 원샷 응답" caption="2. 광합성 설명" figureClass="study-capture" >}}
+
+{{< figure src="oneshot-korean-translation.png" alt="Gemma 3의 한국어 번역 후보 세 가지와 표현 설명" caption="3. 한국어 번역" figureClass="study-capture" >}}
+
+{{< figure src="oneshot-vocabulary-tips.png" alt="Gemma 3의 영어 단어 암기 방법 세 가지에 대한 원샷 응답" caption="4. 단어 암기 방법" figureClass="study-capture" >}}
+
+{{< figure src="oneshot-python-function.png" alt="Gemma 3가 작성한 두 수 중 큰 값을 반환하는 Python 함수와 설명" caption="5. Python 함수 작성" figureClass="study-capture" >}}
+
+</details>
+
+짧은 번역이나 요약, 함수 작성처럼 한 번 묻고 끝나는 작업에 원샷 모드를 사용할 수 있다. 질문이 포함된 명령어를 다시 실행하거나 스크립트에 넣어 반복하기도 편하다.
+
 ## 5. Python 가상환경
 
 프로젝트마다 필요한 패키지와 버전이 다르다. 가상환경을 만들면 각 프로젝트의 Python 패키지를 나누어 관리할 수 있다.
