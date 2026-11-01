@@ -416,7 +416,7 @@ Introduce yourself in one sentence.
 
 {{< figure src="smollm2-cleanup.png" alt="SmolLM2 다운로드, 자기소개 응답, 채팅 종료와 모델 삭제까지의 터미널 기록" figureClass="study-capture" >}}
 
-여러 분야의 일을 돕는 AI 도우미라고 한 문장으로 답했다. 채팅 중 입력한 `ollama ps`에도 모델이 문장으로 답했다.
+여러 분야의 일을 돕는 AI 도우미라고 한 문장으로 답했다.
 
 `/bye`로 채팅을 종료한 뒤 모델을 삭제했다.
 
@@ -431,8 +431,6 @@ ollama list
 |---|---|
 | 모델 다운로드 | `success` |
 | 질문과 응답 | 자기소개를 한 문장으로 요청하고 응답을 받았다. |
-| `ollama ps`로 로드 상태 확인 | [직접 기록] |
-| 대기 후 자동 언로드 확인 | [직접 기록] |
 | 모델 삭제 | `deleted 'smollm2:135m'` |
 | 삭제 후 목록 확인 | SmolLM2가 목록에서 사라지고 Phi, Qwen, Gemma가 남았다. |
 
