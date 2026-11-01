@@ -210,19 +210,6 @@ DeepSeek 계열에서는 추론용 R1과 소형 Distill 모델을 살펴봤다. 
 
 증류는 큰 모델이 만든 예제로 작은 모델을 학습하는 과정이고, 양자화는 가중치 등의 수치를 낮은 정밀도로 표현하는 과정이다. Distill 모델에도 양자화를 적용해 배포할 수 있다. 수학 문제나 코드 오류를 설명하게 한 뒤 답의 정확성과 출력 길이를 함께 비교해보고 싶다.
 
-### 두 번째 모델부터 비교하기
-
-첫 비교는 수업에서 사용한 Gemma 3와 Qwen 3.5로 진행한다.
-
-```sh
-ollama pull qwen3.5:4b
-
-ollama run gemma3:4b "Python 가상환경이 필요한 이유를 한국어로 세 문장으로 설명해줘."
-ollama run qwen3.5:4b "Python 가상환경이 필요한 이유를 한국어로 세 문장으로 설명해줘."
-```
-
-질문 문구, 모델 태그·ID, 양자화, 컨텍스트와 생성 설정을 기록하고 한국어 표현, 지시를 따른 정도, 시간과 메모리 사용량을 비교할 예정이다.
-
 ## 4. 모델 다운로드와 실행
 
 내려받은 모델 파일은 디스크에 보관된다. 대화를 요청하면 모델을 메모리에 준비하고 입력을 처리한다. 응답 후에는 설정에 따라 모델을 메모리에 유지하다가 해제한다.
@@ -288,6 +275,68 @@ Explain what a neural network is in simple terms, like I'm 10 years old.
 {{< figure src="ollama-neural-network-answer.png" alt="신경망을 10살 아이에게 설명해 달라는 질문에 대한 Gemma 3의 응답" figureClass="study-capture" >}}
 
 고양이 사진을 구분하도록 강아지를 가르치는 비유로 답했다. 뉴런을 작은 일꾼과 전구에 빗대고, 층을 거치는 신호 전달과 패턴 인식, 실수를 통한 학습을 여섯 항목으로 풀어 설명했다.
+
+### 두 번째 모델 다운로드
+
+비교할 두 번째 모델로 `qwen3.5:4b`를 내려받았다.
+
+```sh
+ollama pull qwen3.5:4b
+ollama list
+```
+
+{{< figure src="qwen-download-list.png" alt="Qwen 3.5 4B 다운로드 완료와 Qwen·Gemma 모델 목록" figureClass="study-capture" >}}
+
+다운로드가 `success`로 끝난 뒤 목록에 두 모델이 함께 표시됐다.
+
+| 모델 | ID | 다운로드 크기 |
+|---|---|---:|
+| `gemma3:4b` | `68ceab7e468a` | 3.4 GB |
+| `qwen3.5:4b` | `7f3251fa6878` | 4.0 GB |
+
+### 간단한 모델 비교 테스트
+
+두 모델에 같은 질문을 보냈다.
+
+```text
+What is the meaning of life?
+```
+
+{{< figure src="gemma-qwen-response-comparison.png" alt="삶의 의미를 묻는 질문에 대한 Gemma 3와 Qwen 3.5의 터미널 응답 비교" caption="왼쪽: Gemma 3 · 오른쪽: Qwen 3.5" figureClass="study-capture" >}}
+
+Gemma는 본문 답변이 바로 나와 Qwen보다 간결하고 빠르게 느껴졌다. 철학, 종교, 인간적인 관점으로 나눠 삶의 의미를 설명했다.
+
+Qwen은 `Thinking...`이 표시된 뒤 질문 분석, 답변 방향, 내용 구성과 검토 항목을 순서대로 길게 출력했다. 답변을 준비하는 과정이 더 세분되어 보였다.
+
+### 두 모델의 show 결과 비교
+
+```sh
+ollama show gemma3:4b
+ollama show qwen3.5:4b
+```
+
+<div class="study-capture-pair">
+
+{{< figure src="gemma-show.png" alt="ollama show gemma3:4b의 모델 정보와 생성 설정" caption="Gemma 3" figureClass="study-capture study-capture--portrait" >}}
+
+{{< figure src="qwen-show.png" alt="ollama show qwen3.5:4b의 모델 정보와 thinking 기본 설정" caption="Qwen 3.5" figureClass="study-capture study-capture--portrait" >}}
+
+</div>
+
+| 항목 | Gemma 3 | Qwen 3.5 |
+|---|---|---|
+| 모델 태그 | `gemma3:4b` | `qwen3.5:4b` |
+| Architecture | `gemma3` | `qwen3_5` |
+| Parameters | `3.9B` | `4.5B` |
+| Context length | `131072` | `262144` |
+| Embedding length | `2560` | `2560` |
+| Quantization | `Q4_K_M` | `nvfp4` |
+| Capabilities | `completion`, `vision` | `completion`, `vision`, `thinking`, `tools` |
+| Temperature | `1` | `1` |
+| Top-k | `64` | `20` |
+| Top-p | `0.95` | `0.95` |
+
+Qwen의 `thinking` 항목에는 `levels: false, true`, `default: true`가 표시됐다. 양자화 방식과 Top-k 설정에서도 차이를 확인했다.
 
 ## 5. Python 가상환경
 

@@ -45,3 +45,5 @@ body{font-family:"Apple SD Gothic Neo","Noto Sans KR",sans-serif;letter-spacing:
 .prose figure.study-capture{width:100%;max-width:520px;margin:1.5rem auto}
 .prose figure.study-capture--portrait{max-width:300px}
 .prose figure.study-capture img{display:block;width:100%;height:auto;margin:0}
+.prose .study-capture-pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:1rem;margin:1.5rem auto}
+.prose .study-capture-pair figure.study-capture{flex:0 1 300px;margin:0}
