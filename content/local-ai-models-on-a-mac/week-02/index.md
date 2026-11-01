@@ -643,18 +643,32 @@ python3 chat_basic.py
 
 ### 메시지의 역할
 
-| 역할 | 내용 |
-|---|---|
-| `system` | 응답 방식과 역할에 관한 지시 |
-| `user` | 사용자의 질문과 요청 |
-| `assistant` | 모델의 이전 답변 |
+채팅 메시지는 `role`과 `content`를 묶어 표현한다. `role`은 메시지의 종류를, `content`는 실제 내용을 담는다. 이번 실습에서는 세 가지 role을 사용했다. [채팅 메시지 구조](https://huggingface.co/docs/transformers/main/en/chat_templating#using-apply_chat_template)
 
-같은 질문에도 `system` 지시를 다르게 줄 수 있다.
+```python
+{"role": "user", "content": "How does gravity work?"}
+```
 
-- “초보자를 가르치는 튜터처럼 비유를 들어 설명해.”
-- “개발자에게 설명하듯 원리를 간결하게 정리해.”
+| role | 담는 내용 | 이번 실습의 예 |
+|---|---|---|
+| `system` | 프로그램에서 정하는 응답 지침. 말투, 설명 방식, 답변 길이 등을 지정한다. | 친근한 과학 선생님처럼 비유를 사용하고 100단어 미만으로 답하기 |
+| `user` | 사용자가 보낸 질문이나 요청 | `How does gravity work?` |
+| `assistant` | 모델이 생성한 답변. 이전 답변도 이 role로 대화 기록에 넣는다. | 트램펄린과 볼링공으로 중력을 설명한 답변 |
 
-모델은 역할 지시와 질문을 함께 문맥으로 받는다. 지시를 얼마나 따르는지는 실제 답변에서 살펴볼 부분이다.
+과학 선생님이나 셰익스피어 배우 같은 설정은 `role="system"` 메시지의 `content`에 작성한다. `user` 메시지에는 실제 질문을 넣고, 모델이 돌려준 답변은 `assistant` 메시지로 이어진다.
+
+{{< mermaid >}}
+%%{init: {"flowchart": {"rankSpacing": 24, "padding": 10}}}%%
+flowchart LR
+    S["system<br>응답 지침"] --> H["messages<br>순서대로 쌓인 대화"]
+    U["user<br>사용자의 질문"] --> H
+    A["assistant<br>이전 모델 답변"] --> H
+    H --> M["Ollama·모델"]
+    M --> R["새 assistant 답변"]
+    R -. "대화 기록에 추가" .-> H
+{{< /mermaid >}}
+
+첫 요청은 `system` 지침과 `user` 질문으로 시작할 수 있다. 응답을 받은 뒤에는 답변을 `assistant`로 저장하고, 다음 `user` 질문을 붙여 메시지 목록을 다시 보낸다. 이전 답변을 가리키는 “방금 추천한 책을 더 설명해줘” 같은 질문에도 이 기록이 사용된다. [Ollama 채팅 API](https://docs.ollama.com/api/chat)
 
 메시지 목록은 모델에 맞는 채팅 템플릿을 거쳐 역할 구분 정보가 포함된 토큰 시퀀스로 변환된다. 모델은 이 시퀀스를 이어서 다음 출력을 생성한다. [Hugging Face 채팅 템플릿 설명](https://huggingface.co/docs/transformers/main/en/chat_templating)
 
@@ -825,7 +839,7 @@ python3 chat_stream.py
 
 ## 8. 대화 기록 유지하기
 
-처음에 “내 이름은 빵주야”라고 말하고 다음 질문으로 이름을 다시 묻는다고 하자. 이전 질문과 답변을 이번 요청에도 포함하면 모델이 그 문맥에서 이름을 찾을 수 있다.
+`chat_history.py`를 실행해 이름을 알려준 뒤 다시 물었다. 답변에 앞서 입력한 이름인 `빵주야`가 다시 나왔다.
 
 {{< mermaid >}}
 %%{init: {"flowchart": {"rankSpacing": 24, "padding": 10}}}%%
@@ -833,86 +847,107 @@ flowchart TD
     S["system 메시지로<br>history 초기화"] --> I["사용자 입력"]
     I --> Q{"종료 명령인가?"}
     Q -->|"예"| E["프로그램 종료"]
-    Q -->|"아니요"| U["history와 새 user 메시지로<br>요청 구성"]
-    U --> M["Ollama에 대화 목록 전달"]
-    M --> R["응답 조각을 표시하고<br>전체 답변으로 모으기"]
-    R --> A["user·assistant 메시지를<br>history에 반영"]
+    Q -->|"아니요"| U["history에<br>user 메시지 추가"]
+    U --> M["messages=history로<br>Ollama에 요청"]
+    M --> R["응답 조각 출력<br>response_text에 누적"]
+    R --> A["완성된 답변을<br>assistant 메시지로 추가"]
     A --> I
 {{< /mermaid >}}
 
-두 번째 질문을 보내는 시점의 메시지 목록은 다음과 같다.
+두 번째 질문을 보낼 때 `history`에는 다음 순서로 메시지가 들어간다.
 
-```python
-messages = [
-    {"role": "system", "content": "한국어로 답하는 공부 도우미다."},
-    {"role": "user", "content": "내 이름은 빵주야."},
-    {"role": "assistant", "content": "반가워요, 빵주님."},
-    {"role": "user", "content": "내 이름이 뭐였지?"},
-]
-```
+| 순서 | role | 내용 |
+|---|---|---|
+| 1 | `system` | 친절하게 돕고, 간결하면서도 꼼꼼하게 답하라는 지침 |
+| 2 | `user` | 이름 소개 |
+| 3 | `assistant` | 이름을 부르며 인사한 답변 |
+| 4 | `user` | 이름을 다시 묻는 질문 |
 
-*대화 구조 예시.*
-
-`assistant` 메시지에는 앞서 생성된 답변이 들어간다. “네가 추천한 것 중 두 번째를 설명해줘”처럼 이전 답변을 가리키는 질문에 이 기록이 사용된다.
+`messages=history`로 이 목록 전체를 보내면서 이전 소개와 답변도 다음 요청에 함께 전달했다.
 
 ### 스트리밍과 대화 기록을 합친 코드
 
-`chat_history.py` 예시다.
+실행한 `chat_history.py` 코드다.
 
 ```python
-from ollama import Client
-
-client = Client(host="http://127.0.0.1:11434")
+import ollama
 
 history = [
     {
         "role": "system",
         "content": (
-            "너는 공부를 돕는 튜터다. 한국어로 설명하고, "
-            "모르는 내용은 모른다고 말해."
+            "You are a friendly and helpful assistant. "
+            "Be concise but thorough in your answers."
         ),
     }
 ]
 
-try:
-    while True:
-        text = input("\n나: ").strip()
+print("Chat with AI! (type 'quit', 'exit', or 'bye' to exit)")
+print("-" * 40)
 
-        if text.lower() in ("quit", "exit", "bye"):
-            break
-        if not text:
-            continue
+while True:
+    user_input = input("\nYou: ")
 
-        user_message = {"role": "user", "content": text}
-        request_messages = history + [user_message]
+    if user_input.lower() in ("quit", "exit", "bye"):
+        print("\nGoodbye!")
+        break
 
-        stream = client.chat(
-            model="gemma3:4b",
-            messages=request_messages,
-            stream=True,
-        )
+    history.append({
+        "role": "user",
+        "content": user_input,
+    })
 
-        pieces = []
-        print("AI: ", end="", flush=True)
+    stream = ollama.chat(
+        model="gemma3:4b",
+        messages=history,
+        stream=True,
+    )
 
-        for chunk in stream:
-            piece = chunk.message.content
-            print(piece, end="", flush=True)
-            pieces.append(piece)
+    print("\nAI: ", end="")
+    response_text = ""
+    for chunk in stream:
+        piece = chunk["message"]["content"]
+        print(piece, end="", flush=True)
+        response_text += piece
 
-        print()
+    print()
 
-        history = request_messages + [
-            {"role": "assistant", "content": "".join(pieces)}
-        ]
-
-except (KeyboardInterrupt, EOFError):
-    print("\n대화를 종료합니다.")
+    history.append({
+        "role": "assistant",
+        "content": response_text,
+    })
 ```
 
-`pieces`에 응답 조각을 모으고, 응답이 끝나면 하나의 문자열로 합쳐 `assistant` 메시지로 저장한다. 완료된 질문과 답변을 `history`에 반영한 다음 다시 입력을 받는다. 중단된 응답은 이 예시의 기록에서 제외된다.
+<details>
+<summary>chat_history.py 코드 화면</summary>
 
-이 코드의 종료 명령은 `quit`, `exit`, `bye`다. Ollama CLI에서 쓰는 `/bye`와 별도로 프로그램 안에 정의한 값이다.
+{{< figure src="chat-history-code.png" alt="user 입력과 assistant 응답을 history에 추가하며 스트리밍으로 대화하는 chat_history.py 코드" figureClass="study-capture" >}}
+
+</details>
+
+`response_text`에는 화면에 출력한 조각을 계속 이어 붙인다. 응답이 끝나면 이 문자열을 `assistant` 메시지로 `history`에 추가하고 다음 입력을 받는다.
+
+```sh
+python3 chat_history.py
+```
+
+<details>
+<summary>chat_history.py 실행 시작 화면</summary>
+
+{{< figure src="chat-history-start.png" alt="chat_history.py를 시작하고 이름을 소개하는 첫 메시지를 입력한 터미널" figureClass="study-capture" >}}
+
+</details>
+
+{{< figure src="chat-history-result.png" alt="이름을 다시 묻자 앞서 소개한 이름으로 답하고 책을 추천한 뒤 quit으로 종료한 대화 기록" figureClass="study-capture" >}}
+
+| 입력 | 응답·결과 |
+|---|---|
+| 이름 소개 | 이름을 부르며 인사했다. |
+| 이름을 다시 묻기 | `You already told me your name is 빵주야!`라고 답했다. |
+| 초보 프로그래머에게 책 추천 요청 | Al Sweigart의 *Automate the Boring Stuff with Python*을 추천했다. |
+| `quit` | `Goodbye!`를 출력하고 종료했다. |
+
+코드에서는 `quit`, `exit`, `bye`를 입력하면 `while` 반복문을 끝내도록 작성했다.
 
 ## 9. 대화 저장과 컨텍스트
 
@@ -977,19 +1012,14 @@ ollama ps
 | 조건 | 두 번째 요청에 보내는 내용 | 실제 응답 |
 |---|---|---|
 | 기록 제외 | 이름을 묻는 새 질문만 | [직접 기록] |
-| 기록 포함 | 이전 질문·답변과 새 질문 | [직접 기록] |
+| 기록 포함 | 이전 질문·답변과 새 질문 | `You already told me your name is 빵주야!` |
 | 프로그램 재시작 | 초기화된 기록과 새 질문 | [직접 기록] |
 
 각 요청에 전달한 `messages`도 함께 남긴다.
 
 ### B. 역할 지시 변경
 
-같은 모델과 질문에 다음 두 가지 `system` 지시를 적용한다.
-
-- 초보자를 가르치는 튜터
-- 핵심만 정리하는 기술 문서 작성자
-
-답변 길이, 비유, 전문용어, 지시를 따른 정도를 비교한다.
+같은 중력 질문에 과학 선생님과 셰익스피어 배우의 `system` 지시를 각각 적용했다. 과학 선생님 응답에는 짧은 트램펄린 비유가, 배우 응답에는 옛 영어 표현과 무대 동작 지문이 포함된 긴 독백이 나왔다.
 
 ### C. 스트리밍 응답 시간
 
