@@ -338,6 +338,69 @@ ollama show qwen3.5:4b
 
 Qwen의 `thinking` 항목에는 `levels: false, true`, `default: true`가 표시됐다. 양자화 방식과 Top-k 설정에서도 차이를 확인했다.
 
+### 연습문제: 세 모델의 중력 설명 비교
+
+연습문제에서 비교할 `phi3:mini`를 추가로 내려받았다.
+
+```sh
+ollama pull phi3:mini
+```
+
+{{< figure src="phi-download.png" alt="Phi 3 Mini 모델 다운로드가 success로 완료된 터미널" figureClass="study-capture" >}}
+
+세 모델에 “다섯 살 아이에게 중력을 설명해 달라”는 같은 질문을 보냈다.
+
+```sh
+ollama run gemma3:4b "Explain gravity to a five-year-old."
+ollama run qwen3.5:4b "Explain gravity to a five-year-old."
+ollama run phi3:mini "Explain gravity to a five-year-old."
+```
+
+| 모델 | 응답에서 본 점 |
+|---|---|
+| Gemma 3 | 공을 던졌다가 떨어지는 예시와 지구의 보이지 않는 포옹에 비유해 설명했다. |
+| Qwen 3.5 | 긴 `Thinking...` 출력 뒤 미끄럼틀, 사과, 장난감의 예시를 들고 목록과 이모지를 사용했다. |
+| Phi 3 Mini | 슈퍼히어로의 힘, 자석, 보이지 않는 줄을 비유로 사용해 한 문단으로 답했다. 점프 후 내려온다는 표현이 반복됐다. |
+
+{{< figure src="gravity-gemma.png" alt="다섯 살 아이에게 중력을 설명해 달라는 질문에 대한 Gemma 3의 응답" caption="Gemma 3" figureClass="study-capture" >}}
+
+{{< figure src="gravity-qwen-answer.png" alt="Thinking 출력 이후 Qwen 3.5가 작성한 중력 설명" caption="Qwen 3.5 — 최종 답변" figureClass="study-capture" >}}
+
+<details>
+<summary>Qwen 3.5 — Thinking 출력</summary>
+
+<div class="study-capture-pair">
+
+{{< figure src="gravity-qwen-thinking-1.png" alt="Qwen 3.5의 중력 설명에 앞서 나온 Thinking 출력 앞부분" caption="앞부분" figureClass="study-capture study-capture--portrait" >}}
+
+{{< figure src="gravity-qwen-thinking-2.png" alt="Qwen 3.5의 Thinking 출력 뒷부분과 done thinking 표시" caption="뒷부분" figureClass="study-capture study-capture--portrait" >}}
+
+</div>
+</details>
+
+{{< figure src="gravity-phi.png" alt="다섯 살 아이에게 중력을 설명해 달라는 질문에 Phi 3 Mini가 한 문단으로 답한 결과" caption="Phi 3 Mini" figureClass="study-capture" >}}
+
+세 모델 중에서는 Phi 3 Mini가 가장 마음에 들었다. 한 문단으로 짧게 설명해주는 방식이 좋았다.
+
+### 메모리 탐정
+
+```sh
+ollama list
+ollama ps
+ollama show phi3:mini
+```
+
+{{< figure src="ollama-three-models.png" alt="Phi 3 Mini, Qwen 3.5, Gemma 3 세 모델의 로컬 목록과 다운로드 크기" figureClass="study-capture" >}}
+
+| 질문 | 내 기록 |
+|---|---|
+| 내려받은 모델은 몇 개인가? | 3개: `gemma3:4b`, `qwen3.5:4b`, `phi3:mini` |
+| 전체 디스크 공간은 얼마나 차지하는가? | `ollama list`에 표시된 크기의 합계는 약 9.6 GB다. Gemma 3.4 GB + Qwen 4.0 GB + Phi 2.2 GB. |
+| 메모리에 로드된 모델이 있는가? | `ollama ps` 조회 당시 `phi3:mini`가 로드돼 있었다. `SIZE`는 `15 GB`, `PROCESSOR`는 `100% GPU`로 표시됐다. |
+| 가장 마음에 드는 모델의 컨텍스트 길이는? | Phi 3 Mini. `ollama show phi3:mini`의 `context length`는 `131072`토큰이었다. |
+
+Phi의 `show`에 표시된 모델 컨텍스트 길이는 `131072`토큰이고, 조회 당시 `ps`의 실행 컨텍스트는 `32768`토큰이었다.
+
 ## 5. Python 가상환경
 
 프로젝트마다 필요한 패키지와 버전이 다르다. 가상환경을 만들면 각 프로젝트의 Python 패키지를 나누어 관리할 수 있다.
