@@ -598,40 +598,46 @@ python3.13 hello.py
 
 {{< figure src="hello-python.png" alt="hello.py를 실행해 Hello, World!와 My AI chatbot project starts here!를 출력한 터미널" figureClass="study-capture" >}}
 
-`chat_basic.py` 파일을 만들고 다음 코드를 작성한다.
+### 첫 질문: 프랑스의 수도
+
+`chat_basic.py`에서 `gemma3:4b`에 프랑스의 수도를 물었다.
 
 ```python
-from ollama import Client
+import ollama
 
-client = Client(host="http://127.0.0.1:11434")
-
-response = client.chat(
+response = ollama.chat(
     model="gemma3:4b",
     messages=[
-        {
-            "role": "user",
-            "content": "로컬 AI가 무엇인지 한국어로 세 문장으로 설명해줘.",
-        }
+        {"role": "user", "content": "What is the capital of France?"}
     ],
-    stream=False,
 )
 
-print(response.message.content)
+print(response["message"]["content"])
 ```
 
-가상환경의 터미널에서 실행한다.
+<details>
+<summary>chat_basic.py 코드 화면</summary>
+
+{{< figure src="chat-basic-code.png" alt="VS Code에서 프랑스의 수도를 묻는 chat_basic.py를 작성한 화면" figureClass="study-capture" >}}
+
+</details>
+
+가상환경의 터미널에서 실행했다.
 
 ```sh
-python chat_basic.py
+python3 chat_basic.py
 ```
+
+{{< figure src="chat-basic-result.png" alt="chat_basic.py를 실행해 프랑스의 수도가 Paris라는 응답을 받은 터미널" figureClass="study-capture" >}}
+
+프랑스의 수도는 Paris라고 답했고, 예술·패션·미식·문화의 중심지라는 설명을 덧붙였다.
 
 | 코드 | 역할 |
 |---|---|
-| `Client(...)` | 요청할 서버 주소 |
+| `ollama.chat(...)` | 모델에 대화 목록을 보내고 응답 받기 |
 | `model` | 사용할 모델 |
 | `messages` | 전달할 대화 목록 |
-| `stream=False` | 완성된 응답을 한 번에 받는 설정 |
-| `response.message.content` | 답변 텍스트 |
+| `response["message"]["content"]` | 응답에서 답변 텍스트 꺼내기 |
 
 응답을 Python 값으로 받으면 화면 출력, 파일 저장, 다른 프로그램과의 연결에 사용할 수 있다. [Ollama Python 사용법](https://github.com/ollama/ollama-python)
 
@@ -651,6 +657,49 @@ python chat_basic.py
 모델은 역할 지시와 질문을 함께 문맥으로 받는다. 지시를 얼마나 따르는지는 실제 답변에서 살펴볼 부분이다.
 
 메시지 목록은 모델에 맞는 채팅 템플릿을 거쳐 역할 구분 정보가 포함된 토큰 시퀀스로 변환된다. 모델은 이 시퀀스를 이어서 다음 출력을 생성한다. [Hugging Face 채팅 템플릿 설명](https://huggingface.co/docs/transformers/main/en/chat_templating)
+
+### system 메시지로 역할 지정
+
+`chat_system.py`에는 친근한 과학 선생님처럼 재미있는 비유를 사용하고, 답변은 100단어 미만으로 작성하라는 `system` 메시지를 넣었다. 질문은 `How does gravity work?`다.
+
+```python
+import ollama
+
+response = ollama.chat(
+    model="gemma3:4b",
+    messages=[
+        {
+            "role": "system",
+            "content": (
+                "You are a friendly science teacher who explains "
+                "concepts using fun analogies. Keep your answers "
+                "under 100 words."
+            ),
+        },
+        {
+            "role": "user",
+            "content": "How does gravity work?",
+        },
+    ],
+)
+
+print(response["message"]["content"])
+```
+
+<details>
+<summary>chat_system.py 코드 화면</summary>
+
+{{< figure src="chat-system-code.png" alt="과학 선생님 역할과 100단어 미만 응답을 지정한 chat_system.py 코드" figureClass="study-capture" >}}
+
+</details>
+
+```sh
+python3 chat_system.py
+```
+
+{{< figure src="chat-system-result.png" alt="chat_system.py 실행 후 트램펄린과 볼링공의 비유로 중력을 설명한 응답" figureClass="study-capture" >}}
+
+트램펄린 가운데 볼링공을 놓으면 천이 움푹 들어가는 모습에 빗대어 중력을 설명했다. 지구처럼 질량을 가진 물체와 그쪽으로 움직이는 다른 물체를 이 비유에 연결했다.
 
 ## 7. 스트리밍 응답
 
