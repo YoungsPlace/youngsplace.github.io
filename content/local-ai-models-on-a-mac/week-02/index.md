@@ -773,14 +773,55 @@ sequenceDiagram
 
 스트리밍에서는 응답이 완성되기 전부터 내용을 읽을 수 있다. 첫 출력까지의 대기 시간에는 모델 로딩과 입력 처리 시간이 영향을 준다. 전체 완료 시간과 첫 출력 시간은 각각 측정한다. [Ollama 스트리밍 설명](https://docs.ollama.com/api/streaming)
 
-Python 코드는 전달받은 조각을 이어서 출력한다.
+### chat_stream.py 실행
+
+`chat_stream.py`에서 인터넷이 어떻게 작동하는지 쉽게 설명해 달라고 요청했다. `stream=True`를 설정하고 응답 조각을 받을 때마다 출력했다.
 
 ```python
+import ollama
+
+stream = ollama.chat(
+    model="gemma3:4b",
+    messages=[
+        {
+            "role": "system",
+            "content": (
+                "You are a helpful assistant. Provide detailed, "
+                "thoughtful answers."
+            ),
+        },
+        {
+            "role": "user",
+            "content": "Explain how the internet works in simple terms.",
+        },
+    ],
+    stream=True,
+)
+
 for chunk in stream:
-    print(chunk.message.content, end="", flush=True)
+    print(chunk["message"]["content"], end="", flush=True)
+
+print()
 ```
 
-`end=""`는 조각마다 줄바꿈을 붙이지 않는 설정이고, `flush=True`는 출력 버퍼를 즉시 비우도록 요청하는 설정이다. 모델 생성, 응답 전달, 터미널 출력이 이 과정을 거쳐 화면에 나타난다.
+<details>
+<summary>chat_stream.py 코드 화면</summary>
+
+{{< figure src="chat-stream-code.png" alt="stream=True와 for 반복문으로 응답 조각을 출력하는 chat_stream.py 코드" figureClass="study-capture" >}}
+
+</details>
+
+`end=""`는 조각마다 줄바꿈을 붙이지 않는 설정이고, `flush=True`는 출력 버퍼를 즉시 비우도록 요청하는 설정이다. 마지막 `print()`는 답변이 끝난 뒤 줄바꿈을 추가한다.
+
+```sh
+python3 chat_stream.py
+```
+
+{{< figure src="chat-stream-result-1.png" alt="chat_stream.py 실행 후 패킷, IP 주소, 라우터, TCP/IP와 DNS를 설명한 응답 앞부분" caption="응답 앞부분" figureClass="study-capture" >}}
+
+{{< figure src="chat-stream-result-2.png" alt="인터넷 동작을 레시피 조각을 친구에게 보내는 과정에 비유한 응답 뒷부분" caption="응답 뒷부분" figureClass="study-capture" >}}
+
+인터넷을 우편 서비스에 비유하면서 패킷, IP 주소, 라우터, TCP/IP, DNS를 단계별로 설명했다. 뒤에서는 레시피를 여러 조각으로 나눠 친구에게 보내는 비유도 덧붙였다.
 
 ## 8. 대화 기록 유지하기
 
