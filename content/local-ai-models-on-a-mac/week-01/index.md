@@ -7,7 +7,7 @@ summary: "로컬 AI를 쓰는 이유부터 터미널 기본 명령어, Homebrew�
 tags: ["로컬 AI", "Mac", "터미널", "Homebrew", "Ollama"]
 series: ["Local AI Models on a Mac"]
 showTableOfContents: true
-showAuthor: true
+showAuthor: false
 ---
 
 AI 서비스를 사용하는 데서 한 걸음 더 나아가, 내 Mac에서 모델을 직접 실행해 보기로 했다. 이번 스터디에서는 『Build Applications with Local AI Models on a Mac』을 따라 로컬 AI 애플리케이션을 만들어 간다.
