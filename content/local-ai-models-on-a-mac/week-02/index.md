@@ -529,6 +529,18 @@ source .venv/bin/activate
 
 `--seed`는 `pip` 같은 기본 패키지 관리 도구를 환경에 준비하는 옵션이다. [uv 환경 안내](https://docs.astral.sh/uv/pip/environments/)
 
+### 실습 도구 버전 확인
+
+`brew --version`, `ollama --version`, `python3 --version`으로 버전을 확인했다.
+
+{{< figure src="tool-versions.png" alt="가상환경에서 Homebrew 7.0.11, Ollama 0.40.11, Python 3.13.18 버전을 확인한 터미널" figureClass="study-capture" >}}
+
+| 도구 | 버전 |
+|---|---|
+| Homebrew | `7.0.11` |
+| Ollama | `0.40.11` |
+| Python | `3.13.18` |
+
 ### 패키지 설치와 환경 기록
 
 `ollama` 패키지를 설치한다. Streamlit은 이후 웹 화면을 만들 때 사용한다.
