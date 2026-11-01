@@ -750,6 +750,42 @@ python3 chat_system.py
 | 설명에 사용한 소재 | 트램펄린과 볼링공 | 지구본과 보이지 않는 손 |
 | 말투와 구성 | 일상적인 문장, 짧은 두 문단 | 옛 영어 표현, 긴 독백과 무대 동작 지문 |
 
+### 성격 바꾸기: 같은 광합성 질문
+
+`01_personality_swap.py`에서 `gemma3:4b`에 `What is photosynthesis?`를 물었다. 각 요청에 같은 질문을 넣고 `system` 메시지만 바꿨다. [실행 코드](01_personality_swap.py)
+
+| 역할 | 응답에서 나타난 차이 |
+|---|---|
+| 엄격한 수학 교수 | 광합성의 정의, 반응식, 명반응과 캘빈 회로를 설명하고 엽록소의 기능을 되물었다. |
+| 열정적인 유치원 교사 | 샌드위치를 만드는 과정에 비유했다. 햇빛·물·공기를 재료로 설명하고 칭찬과 이모지를 넣었다. |
+| 까칠한 사서 | 식물을 작은 화학 공장에 빗대어 설명하고 Elizabeth Kolbert의 *The Sixth Extinction: An Unnatural History*를 추천했다. |
+
+{{< figure src="personality-professor.png" alt="엄격한 수학 교수 역할로 광합성의 정의와 반응식, 명반응과 캘빈 회로를 설명한 응답" caption="엄격한 수학 교수" figureClass="study-capture" >}}
+
+{{< figure src="personality-kindergarten.png" alt="유치원 교사 역할로 광합성을 샌드위치 만들기에 비유하고 칭찬과 이모지를 사용한 응답" caption="열정적인 유치원 교사" figureClass="study-capture" >}}
+
+{{< figure src="personality-librarian.png" alt="까칠한 사서 역할로 광합성을 설명하고 The Sixth Extinction을 추천한 응답" caption="까칠한 사서" figureClass="study-capture" >}}
+
+설명한 주제는 같았지만 전문 용어의 양, 비유, 말투, 마지막에 덧붙이는 내용이 달라졌다. 교수는 추가 설명을 요구했고, 교사는 그림을 그려 보자고 했으며, 사서는 책을 추천했다.
+
+### 번역 도우미
+
+`03_translator.py`에서는 `system` 메시지에 번역할 언어와 출력 형식을 지정했다. [실행 코드](03_translator.py)
+
+```python
+SYSTEM_MESSAGE = (
+    "You are a translator. When the user gives you text, "
+    "translate it into Japanese, Spanish, and French. "
+    "Format your response as a clean list."
+)
+```
+
+한국어로 직업을 소개하는 문장과 나이·여행에 관한 문장을 입력했다.
+
+{{< figure src="translator-result.png" alt="한국어 문장 두 개를 일본어, 스페인어, 프랑스어로 번역한 결과" figureClass="study-capture" >}}
+
+첫 문장은 세 언어로 번역했다. 두 번째 문장의 일본어 번역에는 `추천해 주세요`가 한국어로 남았다. 입력 문장에 여행지 추천 요청이 들어 있어도 여행지를 답하는 대신 그 요청 문장 자체를 번역했다.
+
 ## 7. 스트리밍 응답
 
 비스트리밍은 전체 답변이 완성된 뒤 결과를 받는다. 스트리밍은 응답 조각을 도착하는 대로 출력한다. 영상에서도 두 설정을 바꾸며 화면에 답변이 나타나는 차이를 보여줬다.
@@ -842,6 +878,17 @@ python3 chat_stream.py
 요청 후 첫 번째 비어 있지 않은 응답 조각을 화면에 출력하기까지의 시간과 전체 응답이 끝날 때까지의 시간을 각각 잰다. Python의 `time.perf_counter()`를 요청 전후에 호출해 경과 시간을 구할 수 있다. [Python 시간 측정 함수](https://docs.python.org/3.13/library/time.html#time.perf_counter)
 
 Ollama 응답의 `load_duration`, `eval_count`, `eval_duration`으로 모델 로딩 시간과 출력 토큰 수, 생성 시간을 살펴볼 수 있다. 시간 필드는 나노초 단위이며, 스트리밍의 사용량 정보는 마지막 조각에 담긴다. [Ollama 측정 지표](https://docs.ollama.com/api/usage)
+
+`04_stream_timer.py`에서는 요청 직전에 측정을 시작하고, 첫 텍스트를 출력한 시점과 응답 반복문이 끝난 시점을 기록했다. [실행 코드](04_stream_timer.py)
+
+{{< figure src="stream-timer-result.png" alt="첫 텍스트 출력 0.101초, 전체 응답 16.331초, 모델 로딩 0.001초, 출력 1138토큰으로 측정된 결과" figureClass="study-capture" >}}
+
+| 측정 항목 | 결과 |
+|---|---|
+| 첫 텍스트 출력까지 | 0.101초 |
+| 전체 응답 완료까지 | 16.331초 |
+| 모델 로딩 | 0.001초 |
+| 출력 토큰 수 | 1,138 |
 
 ## 8. 대화 기록 유지하기
 
@@ -955,6 +1002,14 @@ python3 chat_history.py
 
 코드에서는 `quit`, `exit`, `bye`를 입력하면 `while` 반복문을 끝내도록 작성했다.
 
+### 퀴즈 봇
+
+`02_quiz_bot.py`에서도 질문과 답변을 `history`에 누적했다. `system` 메시지에는 한 번에 한 문제를 내고, 답변 뒤 정답 여부와 해설을 알려 주며 점수를 유지하도록 요청했다. [실행 코드](02_quiz_bot.py)
+
+`Start the quiz!`를 입력하자 상대성이론을 정립한 과학자를 묻는 객관식 문제가 나왔다. `B`를 입력하니 Albert Einstein이 정답이라고 답하고 상대성이론에 대한 해설을 덧붙였다.
+
+{{< figure src="quiz-result.png" alt="상대성이론을 정립한 과학자를 묻는 퀴즈에 B를 입력하고 정답과 해설을 받은 대화" figureClass="study-capture" >}}
+
 ## 9. 대화 저장과 컨텍스트
 
 대화에 사용하는 정보는 여러 곳에 나뉘어 있다.
@@ -968,7 +1023,25 @@ python3 chat_history.py
 
 일반적인 대화 요청은 준비된 가중치로 응답을 계산한다. 대화의 문맥은 프로그램이 `messages`에 구성해 전달한다.
 
-앞선 코드 아래에 다음을 추가하면 `history`를 JSON 파일로 저장할 수 있다.
+### 대화를 텍스트 파일로 저장
+
+`05_conversation_logger.py`를 실행해 대화한 뒤 `chat_log.txt`를 열었다. `system`, `user`, `assistant` 메시지가 순서대로 저장돼 있었다. [실행 코드](05_conversation_logger.py)
+
+```python
+with args.output.open("w", encoding="utf-8") as file:
+    for message in history:
+        file.write(f"[{message['role'].upper()}]\n{message['content']}\n\n")
+```
+
+이 코드는 `while` 반복문 뒤에 둔다. `quit`, `exit`, `bye`로 반복문을 끝내면 누적한 대화 목록을 UTF-8 텍스트로 저장한다. 기본 저장 경로는 `Path(__file__).with_name("chat_log.txt")`로 지정했다.
+
+{{< figure src="conversation-log-result.png" alt="SYSTEM, USER, ASSISTANT 메시지가 순서대로 저장된 chat_log.txt를 VS Code에서 연 화면" figureClass="study-capture" >}}
+
+저장 위치를 묻자 모델은 Google에 저장된다고 답했다. 실제 파일은 실행한 Python 코드에 따라 프로젝트의 `ch7_exercises/chat_log.txt`에 생성됐다.
+
+### 메시지 구조를 유지하는 JSON 저장
+
+`role`과 `content`를 다시 읽어 대화 목록으로 사용하려면 JSON으로 저장할 수 있다.
 
 ```python
 import json
@@ -998,7 +1071,14 @@ ollama ps
 
 ## 10. 두 모델의 토론
 
-수업 후반에는 서로 다른 입장을 가진 두 모델을 연결하는 연습도 소개됐다. 각 모델에 별도의 대화 기록을 두고, 상대의 응답을 다음 입력으로 전달한다.
+`06_debate.py`에서 `gemma3:4b`는 고양이, `phi3:mini`는 강아지가 더 좋은 반려동물이라는 입장을 맡도록 설정했다. 각 모델에 별도의 대화 기록을 두고, 상대의 응답을 다음 입력으로 전달했다. [실행 코드](06_debate.py)
+
+| 모델 | system 메시지 |
+|---|---|
+| `gemma3:4b` | `You believe cats are better pets than dogs. Argue your position.` |
+| `phi3:mini` | `You believe dogs are better pets than cats. Argue your position.` |
+
+첫 질문은 `Why are cats the best pets?`로 시작했다.
 
 | 발언 | 모델 A의 기록 | 모델 B의 기록 |
 |---|---|---|
@@ -1007,17 +1087,20 @@ ollama ps
 
 각 모델은 자기 발언을 `assistant`, 상대 발언을 `user`로 받는다. 정해진 횟수만큼 반복하면 토론 루프가 된다.
 
-실행하면서 입장 유지, 상대 논점에 대한 답변, 답변 길이를 살펴보려 한다. 모델 전환에 따른 로딩과 메모리 상태도 관찰할 항목이다.
+{{< figure src="debate-result.png" alt="두 모델 토론 실행 중 고양이의 장점을 설명하는 제목과 문단이 반복된 터미널 화면" figureClass="study-capture" >}}
 
-## 11. 실행 중 확인할 것
+토론 실행 중 고양이의 장점을 설명하는 구간에서 `The Joy of Discovery`, `The Connection to Nature`, `The Sense of Peace`, `The Legacy of Kindness`라는 제목과 문단이 반복됐다.
 
-| 증상 | 확인할 항목 |
+코드는 한 모델의 응답을 끝까지 받은 뒤 상대 모델을 호출한다. 한 번의 답변이 길어지면 다음 발언으로 넘어가는 시간도 길어진다.
+
+## 11. 정리
+
+| 공부한 내용 | 정리 |
 |---|---|
-| 서버 연결 실패 | 서버 실행 여부, 주소와 포트 |
-| 모델을 찾을 수 없음 | `ollama list`의 태그와 코드의 모델명 |
-| `ModuleNotFoundError: ollama` | 패키지 설치 환경과 Python 실행 경로 |
-| VS Code에서 패키지 인식 실패 | 선택된 인터프리터 |
-| 첫 응답 지연 | 모델 로딩 시간 |
-| 이전 대화가 반영되지 않음 | 요청에 포함된 `history` |
-| 긴 대화에서 속도 저하 | 입력 토큰 수, 컨텍스트 설정, 메모리 상태 |
-| 재시작 후 대화 초기화 | 로그 저장·복원 코드 |
+| 모델 크기와 양자화 | 파라미터 수와 수치의 저장 정밀도가 모델 파일 크기와 실행 메모리에 영향을 준다. 모델 정보와 실제 응답을 함께 살펴봤다. |
+| Python 실행 환경 | `.venv`로 패키지 환경을 나누고, `requirements.txt`에 설치 버전을 기록했다. |
+| 메시지 역할 | `system`에 응답 지침을, `user`에 질문을 넣는다. 모델 답변은 `assistant`로 기록한다. 같은 질문도 역할 지침에 따라 말투와 설명 방식이 달라졌다. |
+| 스트리밍 | `stream=True`로 응답 조각을 받아 즉시 출력했다. 첫 텍스트가 나타나는 시간과 전체 응답이 끝나는 시간을 따로 측정했다. |
+| 대화 기록 | 질문과 답변을 `history`에 순서대로 쌓고 다음 요청에 함께 보냈다. 앞서 알려 준 이름을 다시 묻는 대화로 문맥 유지를 확인했다. |
+| 파일 저장 | 대화 목록을 텍스트 파일로 저장했다. `role`과 `content` 구조를 유지하는 JSON 저장 방식도 정리했다. |
+| 두 모델 연결 | 각 모델의 대화 기록을 따로 관리하고, 한쪽의 답변을 다른 쪽의 `user` 메시지로 전달했다. 실행 중 같은 문단이 반복되는 모습도 관찰했다. |
