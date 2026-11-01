@@ -507,9 +507,14 @@ python3.13 -m venv .venv
 source .venv/bin/activate
 
 python --version
+which python
 python -c "import sys; print(sys.executable)"
 python -m pip --version
 ```
+
+{{< figure src="venv-activated.png" alt="Python 3.13으로 venv를 만들고 활성화한 뒤 Python 버전과 실행 경로를 확인한 터미널" figureClass="study-capture" >}}
+
+프롬프트에 `(.venv)`가 붙었고, `which python`은 `…/week-02/.venv/bin/python`으로 표시됐다.
 
 `venv`는 환경을 만드는 모듈이고, `.venv`는 생성할 폴더 이름이다. `source .venv/bin/activate`를 실행하면 현재 셸의 `PATH`가 바뀌어 해당 환경의 Python을 우선 사용한다.
 
@@ -550,6 +555,10 @@ python -m pip install -r requirements.txt
 ## 6. Python으로 질문 보내기
 
 ### VS Code에서 Python 파일 작성
+
+터미널에서 `code --version`을 실행해 `1.143.1`, `arm64`를 확인했다.
+
+{{< figure src="vscode-version.png" alt="code --version 명령으로 VS Code 1.143.1과 arm64를 확인한 터미널" figureClass="study-capture" >}}
 
 VS Code에서 프로젝트 폴더 `~/local-ai-study/week-02`를 열고 Microsoft의 Python 확장을 설치한다. 명령 팔레트의 `Python: Select Interpreter`에서 앞서 만든 `.venv`의 Python을 선택한다. [VS Code의 Python 환경 설정](https://code.visualstudio.com/docs/python/environments)
 
