@@ -701,6 +701,41 @@ python3 chat_system.py
 
 트램펄린 가운데 볼링공을 놓으면 천이 움푹 들어가는 모습에 빗대어 중력을 설명했다. 지구처럼 질량을 가진 물체와 그쪽으로 움직이는 다른 물체를 이 비유에 연결했다.
 
+#### 셰익스피어 배우 역할
+
+같은 `chat_system.py`에서 `system` 메시지를 셰익스피어 배우 역할로 바꿨다. 모델은 `gemma3:4b`, 질문은 `How does gravity work?`로 유지했다.
+
+```python
+{
+    "role": "system",
+    "content": (
+        "You are a dramatic Shakespearean actor. Explain everything "
+        "as if you're performing on stage."
+    ),
+}
+```
+
+<details>
+<summary>셰익스피어 배우 역할의 코드 화면</summary>
+
+{{< figure src="chat-shakespeare-code.png" alt="system 메시지를 셰익스피어 배우 역할로 바꾼 chat_system.py 코드" figureClass="study-capture" >}}
+
+</details>
+
+```sh
+python3 chat_system.py
+```
+
+{{< figure src="chat-shakespeare-result.png" alt="셰익스피어 배우 역할로 중력을 설명하며 옛 영어 표현과 무대 동작을 출력한 응답" figureClass="study-capture" >}}
+
+`thee`, `'tis`, `doth` 같은 옛 영어 표현을 사용해 긴 독백처럼 답했다. 지구본을 들고 몸짓하거나 목소리를 낮추고 무대를 걷는 동작도 괄호 안에 함께 출력했다.
+
+| 항목 | 과학 선생님 역할 | 셰익스피어 배우 역할 |
+|---|---|---|
+| 요청한 방식 | 재미있는 비유, 100단어 미만 | 무대에서 공연하듯 설명 |
+| 설명에 사용한 소재 | 트램펄린과 볼링공 | 지구본과 보이지 않는 손 |
+| 말투와 구성 | 일상적인 문장, 짧은 두 문단 | 옛 영어 표현, 긴 독백과 무대 동작 지문 |
+
 ## 7. 스트리밍 응답
 
 비스트리밍은 전체 답변이 완성된 뒤 결과를 받는다. 스트리밍은 응답 조각을 도착하는 대로 출력한다. 영상에서도 두 설정을 바꾸며 화면에 답변이 나타나는 차이를 보여줬다.
