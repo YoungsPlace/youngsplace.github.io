@@ -78,6 +78,30 @@ VS Code에서 작성한 Python 코드가 Ollama 라이브러리를 호출한다.
 
 파라미터 수가 같아도 양자화 방식에 따라 파일 크기와 메모리 사용량이 달라진다. 낮은 정밀도를 적용했을 때 답변 품질이 얼마나 달라지는지도 비교할 항목이다. [Hugging Face 양자화 설명](https://huggingface.co/docs/transformers/quantization/overview)
 
+### /show info로 본 모델 정보
+
+대화 모드에서 `/show info`를 실행했다.
+
+```text
+/show info
+```
+
+![Gemma 3의 모델 구조와 생성 설정을 보여주는 show info 출력](ollama-show-info.png)
+
+| 항목 | 출력 값 |
+|---|---|
+| 모델 구조 | `gemma3` |
+| 파라미터 수 | `3.9B` |
+| 모델의 컨텍스트 길이 | `131072` 토큰 |
+| 임베딩 길이 | `2560` |
+| 양자화 | `Q4_K_M` |
+| 기능 | `completion`, `vision` |
+| Temperature | `1` |
+| Top-k | `64` |
+| Top-p | `0.95` |
+
+`Projector`에는 `clip`, `419.82M` 파라미터가 표시됐다. 이미지 입력을 처리하는 구성 요소의 정보도 함께 볼 수 있었다.
+
 ## 3. 모델 다운로드와 실행
 
 내려받은 모델 파일은 디스크에 보관된다. 대화를 요청하면 모델을 메모리에 준비하고 입력을 처리한다. 응답 후에는 설정에 따라 모델을 메모리에 유지하다가 해제한다.
@@ -133,6 +157,16 @@ Ollama `0.40.11`이 `127.0.0.1:11434`에서 실행 중이다. 서버 로그에 `
 ![Gemma 3에 같은 질문을 두 번 입력했을 때의 응답](ollama-repeated-prompt.png)
 
 샘플링을 사용하는 생성에서는 다음 토큰을 확률에 따라 선택하며, `temperature`와 `seed` 등의 설정이 결과에 영향을 준다. 이 캡처는 같은 세션의 연속 대화여서 두 번째 응답에는 앞선 질문과 답변도 문맥으로 포함된다. [Ollama 생성 설정](https://docs.ollama.com/modelfile#valid-parameters-and-values)
+
+### 신경망을 10살 아이에게 설명해 달라고 요청하기
+
+```text
+Explain what a neural network is in simple terms, like I'm 10 years old.
+```
+
+![신경망을 10살 아이에게 설명해 달라는 질문에 대한 Gemma 3의 응답](ollama-neural-network-answer.png)
+
+고양이 사진을 구분하도록 강아지를 가르치는 비유로 답했다. 뉴런을 작은 일꾼과 전구에 빗대고, 층을 거치는 신호 전달과 패턴 인식, 실수를 통한 학습을 여섯 항목으로 풀어 설명했다.
 
 ## 4. Python 가상환경
 
