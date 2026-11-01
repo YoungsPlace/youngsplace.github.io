@@ -12,7 +12,7 @@ showAuthor: false
 
 1주차에는 Mac에 Ollama를 설치하고 터미널에서 모델과 대화했다. 2주차에는 Python으로 질문을 보내고, 답변을 스트리밍으로 출력하고, 대화 기록을 관리하는 코드를 공부했다.
 
-범위는 『Build Applications with Local AI Models on a Mac』 CH4~7이다. 모델 크기와 양자화, VS Code와 Python 가상환경, Ollama Python 라이브러리 사용법을 정리했다.
+범위는 『Build Applications with Local AI Models on a Mac』 CH4~7이다. 모델 크기와 양자화, Python 가상환경, Ollama Python 라이브러리 사용법을 정리했다.
 
 ## 1. Python에서 모델까지
 
@@ -20,13 +20,13 @@ showAuthor: false
 %%{init: {"flowchart": {"rankSpacing": 24, "padding": 10}}}%%
 flowchart TB
     subgraph MAC["내 Mac"]
-        V["VS Code<br>코드 작성·실행"]
+        T["터미널<br>Python 파일 실행"]
         P["Python 프로그램<br>질문·기록·출력 관리"]
         L["Ollama 라이브러리<br>요청·응답 처리"]
         S["Ollama 서버<br>127.0.0.1:11434"]
         M["모델 실행<br>Gemma 3 가중치로 추론"]
 
-        V -. "코드 작성" .-> P
+        T -->|"실행"| P
         P --> L
         L -->|"HTTP 요청"| S
         S --> M
@@ -36,11 +36,11 @@ flowchart TB
     end
 {{< /mermaid >}}
 
-VS Code에서 작성한 Python 코드가 Ollama 라이브러리를 호출한다. 라이브러리는 로컬 서버에 HTTP 요청을 보내고, 서버는 모델을 실행해 응답을 돌려준다. Python에서는 이 응답을 출력하거나 파일에 저장한다.
+터미널에서 Python 파일을 실행하면 코드가 Ollama 라이브러리를 호출한다. 라이브러리는 로컬 서버에 HTTP 요청을 보내고, 서버는 모델을 실행해 응답을 돌려준다. Python에서는 이 응답을 출력하거나 파일에 저장한다.
 
 | 구성 요소 | 역할 |
 |---|---|
-| VS Code | 코드 편집·실행·디버깅 |
+| 터미널 | Python 파일 실행과 출력 확인 |
 | Python 프로그램 | 질문, 대화 기록, 출력 관리 |
 | Ollama Python 라이브러리 | 서버 요청과 응답 처리 |
 | Ollama 서버 | 모델 로딩과 추론 관리 |
@@ -334,12 +334,6 @@ source .venv/bin/activate
 
 `--seed`는 `pip` 같은 기본 패키지 관리 도구를 환경에 준비하는 옵션이다. [uv 환경 안내](https://docs.astral.sh/uv/pip/environments/)
 
-### VS Code 설정
-
-프로젝트 폴더를 열고 Microsoft의 Python 확장을 설치한다. 명령 팔레트의 `Python: Select Interpreter`에서 프로젝트의 `.venv`를 선택한다.
-
-터미널과 VS Code가 같은 Python 환경을 사용하도록 맞춘다. [VS Code의 Python 환경 설정](https://code.visualstudio.com/docs/python/environments)
-
 ### 패키지 설치와 환경 기록
 
 `ollama` 패키지를 설치한다. Streamlit은 이후 웹 화면을 만들 때 사용한다.
@@ -365,7 +359,11 @@ python -m pip install -r requirements.txt
 
 ## 6. Python으로 질문 보내기
 
-Ollama 서버와 `gemma3:4b`를 준비한 뒤 `chat_basic.py`에 다음 코드를 작성한다.
+### VS Code에서 Python 파일 작성
+
+VS Code에서 프로젝트 폴더 `~/local-ai-study/week-02`를 열고 Microsoft의 Python 확장을 설치한다. 명령 팔레트의 `Python: Select Interpreter`에서 앞서 만든 `.venv`의 Python을 선택한다. [VS Code의 Python 환경 설정](https://code.visualstudio.com/docs/python/environments)
+
+`chat_basic.py` 파일을 만들고 다음 코드를 작성한다.
 
 ```python
 from ollama import Client
