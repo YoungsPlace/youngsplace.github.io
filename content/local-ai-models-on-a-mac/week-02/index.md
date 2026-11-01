@@ -574,6 +574,14 @@ python -m pip install -r requirements.txt
 
 VS Code에서 프로젝트 폴더 `~/local-ai-study/week-02`를 열고 Microsoft의 Python 확장을 설치한다. 명령 팔레트의 `Python: Select Interpreter`에서 앞서 만든 `.venv`의 Python을 선택한다. [VS Code의 Python 환경 설정](https://code.visualstudio.com/docs/python/environments)
 
+`my-ai-chatbot` 폴더에서 `hello.py`를 실행했다.
+
+```sh
+python3.13 hello.py
+```
+
+{{< figure src="hello-python.png" alt="hello.py를 실행해 Hello, World!와 My AI chatbot project starts here!를 출력한 터미널" figureClass="study-capture" >}}
+
 `chat_basic.py` 파일을 만들고 다음 코드를 작성한다.
 
 ```python
