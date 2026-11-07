@@ -12,7 +12,7 @@ showAuthor: false
 
 2주차에는 터미널에서 Ollama에 질문을 보내고 답변을 한 조각씩 출력했다. 3주차에는 그 코드에 웹 화면을 붙이고, 음성으로도 질문을 보낼 수 있게 만드는 과정을 살펴봤다. 교재 CH8~11의 범위다. [Build Applications with Local AI Models on a Mac](https://www.manning.com/books/build-applications-with-local-ai-models-on-a-mac)
 
-실행 결과와 캡처는 Codex가 Apple M5 Pro Mac에서 재현한 것이다. 음성 입력에는 macOS에서 만든 한국어·영어 합성 음성을 사용했다.
+음성 입력은 macOS에서 만든 한국어·영어 합성 WAV로 테스트했다.
 
 ## 1. Streamlit에서 위젯과 재실행 살펴보기
 
@@ -73,7 +73,7 @@ Apple M5 Pro에서 `mlx-whisper 0.4.3`의 실행 장치는 `Device(gpu, 0)`로 �
 
 ## 3. 음성 입력과 Ollama를 연결하기
 
-녹화에서는 브라우저에서 음성을 입력한 뒤 전사문과 Gemma 답변이 한 화면에 나오는 흐름을 시연했다(1:03 부근). 재현 앱에는 마이크와 WAV 파일 입력을 두고, 전사문을 확인하거나 고친 뒤 전송하는 단계를 추가했다. [음성 채팅 실행 코드](voice_chat.py)
+녹화에서는 브라우저에서 음성을 입력한 뒤 전사문과 Gemma 답변이 한 화면에 나오는 흐름을 시연했다(1:03 부근). 앱에는 마이크와 WAV 파일 입력을 두고, 전사문을 확인하거나 고친 뒤 전송하는 단계를 추가했다. [음성 채팅 실행 코드](voice_chat.py)
 
 {{< mermaid >}}
 flowchart TD
