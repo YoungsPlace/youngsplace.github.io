@@ -114,6 +114,56 @@ flowchart TD
 
 같은 Mac에서 Llama 3.1 8B는 320토큰 생성까지 끝났다. 모델을 고를 때는 활성 파라미터 외에 내려받을 양자화 파일, 컨텍스트 길이, 실행 중 메모리 여유를 함께 본다.
 
+## 트랜스포머는 다음 토큰을 어떻게 고를까
+
+강의에서는 37분대에 Transformer Explainer로 같은 문장 뒤에 다른 토큰이 붙는 모습을 보여 줬다. 브라우저에서 GPT-2 small을 실행하는 도구라, 토큰이 숫자로 바뀌는 과정부터 다음 토큰의 확률까지 한 화면에서 따라갈 수 있다. [Transformer Explainer 열기](https://poloclub.github.io/transformer-explainer/) · [Transformer Explainer 논문](https://arxiv.org/html/2408.04619)
+
+### 입력 문장에서 다음 토큰까지
+
+트랜스포머는 어텐션으로 입력의 여러 위치에서 정보를 가져와 각 토큰의 표현을 갱신하는 신경망 구조다. 2017년 논문에 나온 구조는 입력을 읽는 인코더와 출력을 만드는 디코더를 함께 썼다. 이번에 본 GPT-2는 앞에 놓인 토큰으로 다음 토큰을 예측하는 디코더 전용 모델이다. [Attention Is All You Need](https://arxiv.org/html/1706.03762#S3) · [GPT-2 기술 보고서](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)
+
+{{< mermaid >}}
+flowchart TD
+    I["입력 문장"] --> E["토큰 ID → 임베딩과 위치 정보"]
+    E --> A["셀프 어텐션으로 앞 문맥 섞기"]
+    A --> M["MLP로 각 위치의 표현 갱신"]
+    M --> L["블록을 거친 마지막 위치 → 다음 토큰 점수"]
+    L --> P["Temperature와 후보 제한 → 확률"]
+    P --> T["토큰 하나를 뽑아 문장 끝에 붙이기"]
+    T -->|"한 토큰 더 생성"| E
+{{< /mermaid >}}
+
+1. **토큰과 위치.** 기본 문장 `Data visualization empowers users to`는 화면에서 `Data`, `visualization`, `em`, `powers`, `users`, `to` 여섯 조각으로 보였다. `empowers` 하나가 두 토큰이다. GPT-2는 토큰 ID에 해당하는 임베딩 벡터를 가져온 뒤, 몇 번째 위치인지 나타내는 벡터를 더한다.
+2. **셀프 어텐션.** 각 위치에서 질의(Q), 키(K), 값(V)을 만든다. 현재 위치의 Q와 각 위치의 K를 내적해 점수를 구한다. 점수를 키 벡터 차원의 제곱근으로 나누고 뒤쪽 위치를 가린 뒤 소프트맥스로 바꾸면, 읽을 수 있는 토큰의 가중치 합이 1이 된다. 이 가중치로 V들을 섞어 현재 위치에 들여온다. GPT-2에서 `em`은 자기 자신과 앞의 `Data`, `visualization`을 참조할 수 있고, 뒤의 `powers`는 가려진다.
+3. **MLP와 출력.** 각 헤드가 따로 계산한 결과를 한 벡터로 합친다. 이어서 다층 퍼셉트론(MLP)이 각 위치의 벡터를 따로 변환한다. GPT-2 small은 이런 블록을 12개 쌓는다. 마지막 블록을 지난 마지막 입력 위치의 벡터를 어휘별 점수인 로짓으로 바꾸면, `to` 바로 뒤에 올 토큰을 고를 수 있다. 뽑힌 토큰을 끝에 붙이고 같은 과정을 반복한다.
+
+### Transformer Explainer에서 확인한 것
+
+화면 왼쪽에는 입력 토큰과 임베딩, 가운데는 어텐션과 MLP, 오른쪽은 다음 토큰 후보가 나온다. 가운데 **Attention** 옆 돋보기를 열면 내적 점수와 마스크를 적용한 행렬이 나란히 보인다. 마스크를 적용하자 대각선 오른쪽 위가 가려졌다. **Head 1 of 12** 옆 화살표로 두 번째 헤드를 열어 보니 같은 문장의 어텐션 행렬에서 색 분포가 달라졌다.
+
+{{< figure src="transformer-explainer.png" alt="Transformer Explainer에서 여섯 입력 토큰이 임베딩, 셀프 어텐션과 MLP를 지난 뒤 visualize와 create 등의 확률로 이어지는 화면" caption="기본 문장의 토큰과 다음 토큰 후보 · Georgia Tech Polo Club의 Transformer Explainer" figureClass="study-capture" >}}
+
+입력을 `Data visualization empowers users to`로 두고 **Sampling**은 Top-k 5로 고정했다. **Temperature** 슬라이더만 바꾸고 오른쪽 **Probabilities**의 값을 읽었다. 아래 확률은 남은 다섯 후보 안에서 다시 합이 100%가 되도록 계산한 값이다.
+
+| Temperature | `visualize` | `create` | `see` |
+|---:|---:|---:|---:|
+| 0.5 | 73.27% | 15.69% | 6.55% |
+| 0.8 | 54.67% | 20.87% | 12.09% |
+| 2.0 | 32.64% | 22.21% | 17.85% |
+
+세 설정에서 모두 `visualize`가 1순위였다. 온도를 올리자 1순위의 확률이 내려가고 다른 후보가 뽑힐 가능성이 커졌다. 화면에서 `visualize`의 막대가 가장 길 때도, 뽑힌 토큰은 `create`로 보라색 표시가 되어 있었다.
+
+Temperature를 0.8로 돌리고 Top-k를 1로 줄이자 `visualize`만 남아 100%가 됐다. Top-p 0.5로 바꾸면 `visualize`, `create`, `see` 세 개가 남았다. 후보를 자르기 전의 누적 확률은 두 개에서 48.36%, 세 개에서 56.11%였다. 세 번째 토큰을 더했을 때 처음 50%를 넘었다. [Transformer Explainer의 샘플링 설명](https://arxiv.org/html/2408.04619#S6.SS4)
+
+GPT-2 다운로드가 끝나고 **Generate**가 활성화되면 직접 문장을 넣을 수 있다. Temperature 0.8과 Top-k 5로 `The capital of France is`와 `The capital of Japan is`를 각각 입력했다. 나라 이름을 바꾸자 후보도 바뀌었다.
+
+| 입력 | 1순위 후보 | 도시 이름 후보 | 한 번 생성한 토큰 |
+|---|---|---|---|
+| `The capital of France is` | `the` (39.06%) | `Paris` (11.68%) | `a` |
+| `The capital of Japan is` | `the` (33.64%) | `Tokyo` (22.02%) | `Tokyo` |
+
+`is` 뒤에는 도시 이름을 바로 쓰거나 `the`처럼 문장을 더 이어 갈 수 있다. 화면의 수치는 이 자리에서 토큰 하나가 나올 확률이다. 직전에 뽑힌 토큰이 다음 계산의 입력에 들어가므로, 한 토큰의 선택이 그 뒤에 이어질 문장에도 영향을 준다.
+
 ## 같은 모델의 답변을 바꾸는 방법
 
 같은 모델에 다른 역할을 주면 말투와 설명 방식이 달라진다. 생성 설정은 다음 글자나 단어 조각을 어떤 기준으로 고를지 정한다. 이 두 가지를 따로 확인할 때는 Gemma 3 4B를 사용했다. `ollama pull gemma3:4b`로 내려받을 수 있다.
