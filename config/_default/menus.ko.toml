@@ -7,6 +7,10 @@ name = "NVIDIA NCA-AMAD"
 pageRef = "nca-amad"
 weight = 7
 [[main]]
+name = "Agentic AI"
+pageRef = "agentic-ai"
+weight = 8
+[[main]]
 name = "공부 노트"
 pageRef = "notes"
 weight = 10
