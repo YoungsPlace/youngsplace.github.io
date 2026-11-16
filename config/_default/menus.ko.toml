@@ -11,6 +11,10 @@ name = "Agentic AI"
 pageRef = "agentic-ai"
 weight = 8
 [[main]]
+name = "NCP-AAI"
+pageRef = "ncp-aai"
+weight = 9
+[[main]]
 name = "공부 노트"
 pageRef = "notes"
 weight = 10
