@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="504pt" height="396pt" viewBox="0 0 504 396" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-11-17T00:19:08.400320</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.9.4, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 396 
+L 504 396 
+L 504 0 
+L 0 0 
+z
+" style="fill: #f5f4ee"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 97.05524 354.17726 
+L 500.99976 354.17726 
+L 500.99976 36.36274 
+L 97.05524 36.36274 
+z
+" style="fill: #f5f4ee"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m0582cd3085" d="M 0 0 
+L 0 3.5 
+" style="stroke: #45463f; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m0582cd3085" x="152.138584" y="354.17726" style="fill: #45463f; stroke: #45463f; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="fill: #45463f; font: 16px 'Apple SD Gothic Neo'; text-anchor: middle" x="152.138584" y="373.30476" transform="rotate(-0 152.138584 373.30476)">-0.004</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m0582cd3085" x="299.0275" y="354.17726" style="fill: #45463f; stroke: #45463f; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="fill: #45463f; font: 16px 'Apple SD Gothic Neo'; text-anchor: middle" x="299.0275" y="373.30476" transform="rotate(-0 299.0275 373.30476)">0.000</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m0582cd3085" x="445.916416" y="354.17726" style="fill: #45463f; stroke: #45463f; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="fill: #45463f; font: 16px 'Apple SD Gothic Neo'; text-anchor: middle" x="445.916416" y="373.30476" transform="rotate(-0 445.916416 373.30476)">0.004</text>
+     </g>
+    </g>
+    <g id="text_4">
+     <text style="fill: #222328; font: 16px 'Apple SD Gothic Neo'; text-anchor: middle" x="299.0275" y="391.30476" transform="rotate(-0 299.0275 391.30476)">학습 로짓 G</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_4">
+      <path d="M 97.05524 342.406352 
+L 500.99976 342.406352 
+" clip-path="url(#pfb3024c53d)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_5">
+      <defs>
+       <path id="m1c78b15120" d="M 0 0 
+L -3.5 0 
+" style="stroke: #45463f; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m1c78b15120" x="97.05524" y="342.406352" style="fill: #45463f; stroke: #45463f; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="fill: #45463f; font: 16px 'Apple SD Gothic Neo'; text-anchor: end" x="90.05524" y="348.598852" transform="rotate(-0 90.05524 348.598852)">0 · 삭제 쪽</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_6">
+      <path d="M 97.05524 195.27 
+L 500.99976 195.27 
+" clip-path="url(#pfb3024c53d)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#m1c78b15120" x="97.05524" y="195.27" style="fill: #45463f; stroke: #45463f; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="fill: #45463f; font: 16px 'Apple SD Gothic Neo'; text-anchor: end" x="90.05524" y="201.33375" transform="rotate(-0 90.05524 201.33375)">0.5</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_8">
+      <path d="M 97.05524 48.133648 
+L 500.99976 48.133648 
+" clip-path="url(#pfb3024c53d)" style="fill: none; stroke: #b0b0b0; stroke-opacity: 0.2; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#m1c78b15120" x="97.05524" y="48.133648" style="fill: #45463f; stroke: #45463f; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="fill: #45463f; font: 16px 'Apple SD Gothic Neo'; text-anchor: end" x="90.05524" y="54.326148" transform="rotate(-0 90.05524 54.326148)">1 · 유지 쪽</text>
+     </g>
+    </g>
+    <g id="text_8">
+     <text style="fill: #222328; font: 16px 'Apple SD Gothic Neo'; text-anchor: middle" x="15.29024" y="195.27" transform="rotate(-90 15.29024 195.27)">유지 정도  σ(αG)</text>
+    </g>
+   </g>
+   <g id="line2d_10">
+    <path d="M 115.416355 340.436829 
+L 127.064474 339.708403 
+L 137.486476 338.833751 
+L 146.682359 337.832927 
+L 154.652125 336.745746 
+L 162.008832 335.519547 
+L 168.75248 334.170143 
+L 174.883069 332.722955 
+L 180.4006 331.21275 
+L 185.91813 329.477715 
+L 190.822601 327.722582 
+L 195.727073 325.743292 
+L 200.631544 323.515232 
+L 204.922956 321.341057 
+L 209.214369 318.93798 
+L 213.505781 316.286975 
+L 217.797194 313.36862 
+L 222.088606 310.1634 
+L 226.380018 306.652078 
+L 230.671431 302.81614 
+L 234.962843 298.638335 
+L 239.254256 294.103277 
+L 243.545668 289.198125 
+L 247.83708 283.913313 
+L 252.128493 278.243307 
+L 256.419905 272.187366 
+L 260.711318 265.750254 
+L 265.00273 258.942862 
+L 269.907201 250.732347 
+L 274.811673 242.09846 
+L 280.329203 231.940702 
+L 287.072851 219.01028 
+L 295.655676 202.020266 
+L 312.208267 169.143949 
+L 318.951915 156.305268 
+L 324.469445 146.245857 
+L 329.373916 137.713678 
+L 334.278388 129.615278 
+L 339.182859 121.984861 
+L 343.474271 115.710145 
+L 347.765684 109.819358 
+L 352.057096 104.314822 
+L 356.348509 99.193652 
+L 360.639921 94.448491 
+L 364.931334 90.068279 
+L 369.222746 86.038996 
+L 373.514158 82.344378 
+L 377.805571 78.966563 
+L 382.096983 75.886666 
+L 386.388396 73.085282 
+L 390.679808 70.542893 
+L 394.97122 68.240215 
+L 399.875692 65.878039 
+L 404.780163 63.777544 
+L 409.684634 61.913305 
+L 415.202165 60.068907 
+L 420.719695 58.46229 
+L 426.850284 56.921648 
+L 432.980873 55.604764 
+L 439.724521 54.377975 
+L 447.081228 53.264128 
+L 455.050994 52.277302 
+L 464.246878 51.369476 
+L 474.66888 50.57658 
+L 482.638645 50.103171 
+L 482.638645 50.103171 
+" clip-path="url(#pfb3024c53d)" style="fill: none; stroke: #346a80; stroke-width: 3; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_11">
+    <path d="M 115.416355 342.406352 
+L 269.907201 342.300502 
+L 274.198614 342.066049 
+L 276.65085 341.743522 
+L 278.490026 341.314217 
+L 280.329203 340.60856 
+L 281.555321 339.901999 
+L 282.781439 338.921058 
+L 284.007557 337.562266 
+L 285.233674 335.685974 
+L 286.459792 333.106276 
+L 287.68591 329.5805 
+L 288.912028 324.800636 
+L 290.138146 318.391437 
+L 291.364264 309.922968 
+L 292.590381 298.948428 
+L 293.816499 285.078079 
+L 295.042617 268.092432 
+L 296.268735 248.077667 
+L 298.107912 213.597076 
+L 301.786265 142.462333 
+L 303.012383 122.447568 
+L 304.238501 105.461921 
+L 305.464619 91.591572 
+L 306.690736 80.617032 
+L 307.916854 72.148563 
+L 309.142972 65.739364 
+L 310.36909 60.9595 
+L 311.595208 57.433724 
+L 312.821326 54.854026 
+L 314.047443 52.977734 
+L 315.273561 51.618942 
+L 316.499679 50.638001 
+L 317.725797 49.93144 
+L 319.564974 49.225783 
+L 321.40415 48.796478 
+L 323.856386 48.473951 
+L 327.53474 48.258721 
+L 334.278388 48.153591 
+L 360.026862 48.133666 
+L 482.638645 48.133648 
+L 482.638645 48.133648 
+" clip-path="url(#pfb3024c53d)" style="fill: none; stroke: #9b791f; stroke-width: 3; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_12">
+    <path d="M 299.0275 354.17726 
+L 299.0275 36.36274 
+" clip-path="url(#pfb3024c53d)" style="fill: none; stroke-dasharray: 3.7,1.6; stroke-dashoffset: 0; stroke: #aaa99e"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 97.05524 354.17726 
+L 97.05524 36.36274 
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 97.05524 354.17726 
+L 500.99976 354.17726 
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_9">
+    <text style="fill: #222328; font: 20px 'Apple SD Gothic Neo'; text-anchor: middle" x="299.0275" y="18.36274" transform="rotate(-0 299.0275 18.36274)">점점 단단해지는 유지·삭제 결정</text>
+   </g>
+   <g id="legend_1">
+    <g id="line2d_13">
+     <path d="M 367.00226 183.975 
+L 383.00226 183.975 
+L 399.00226 183.975 
+" style="fill: none; stroke: #346a80; stroke-width: 3; stroke-linecap: square"/>
+    </g>
+    <g id="text_10">
+     <text style="fill: #222328; font: 16px 'Apple SD Gothic Neo'; text-anchor: start" x="411.80226" y="189.575" transform="rotate(-0 411.80226 189.575)">α = 1,000</text>
+    </g>
+    <g id="line2d_14">
+     <path d="M 367.00226 205.7975 
+L 383.00226 205.7975 
+L 399.00226 205.7975 
+" style="fill: none; stroke: #9b791f; stroke-width: 3; stroke-linecap: square"/>
+    </g>
+    <g id="text_11">
+     <text style="fill: #222328; font: 16px 'Apple SD Gothic Neo'; text-anchor: start" x="411.80226" y="211.3975" transform="rotate(-0 411.80226 211.3975)">α = 10,000</text>
+    </g>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pfb3024c53d">
+   <rect x="97.05524" y="36.36274" width="403.94452" height="317.81452"/>
+  </clipPath>
+ </defs>
+</svg>

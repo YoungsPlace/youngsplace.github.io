@@ -1,0 +1,9 @@
+model,evaluation,base_accuracy_pct,fft_accuracy_pct,dt_accuracy_pct,dt_minus_fft_pp
+Llama1B,GSM8K,1.21,60.5,54.44,-6.06
+Llama3B,GSM8K,53.53,82.49,81.49,-1.0
+Llama8B,GSM8K,60.27,83.24,83.55,0.31
+Qwen0.5B,Six-benchmark mean,10.44,19.01,17.64,-1.37
+Qwen3B,Six-benchmark mean,37.73,44.35,41.98,-2.37
+Qwen7B,Six-benchmark mean,40.18,51.89,52.32,0.43
+Qwen14B,Six-benchmark mean,44.37,54.87,55.43,0.56
+Qwen3-30B-A3B,Six-benchmark mean,49.41,58.43,58.54,0.11

@@ -1,0 +1,88 @@
+<div id="deletion-mask-demo" class="deletion-demo" aria-label="마스크의 날카로움을 바꾸는 설명용 예시">
+  <p class="demo-heading"><strong>같은 가중치, 달라지는 유지·삭제 결정</strong></p>
+  <p class="demo-context">설명용 예시 · 로짓 G는 고정하고 α만 바꿉니다. 실제 학습을 재현한 화면은 아닙니다.</p>
+  <div class="demo-controls">
+    <button type="button" class="demo-play">변화 재생</button>
+    <label class="demo-mode"><input type="checkbox"> 최종 이진 마스크</label>
+  </div>
+  <label class="demo-slider-label" for="deletion-alpha">날카로움 α <output class="demo-alpha" for="deletion-alpha">1,000</output></label>
+  <input id="deletion-alpha" class="demo-slider" type="range" min="1000" max="10000" step="100" value="1000" aria-label="마스크 날카로움 α">
+  <div class="demo-matrices">
+    <div><p class="demo-label">원래 W₀ · 고정</p><div class="demo-grid demo-original"><div><b>1.0</b></div><div><b>−0.9</b></div><div><b>0.4</b></div><div><b>0.8</b></div></div></div>
+    <div><p class="demo-label demo-effective-label">학습 중 유효 W</p><div class="demo-grid demo-effective"><div><b>0.731</b><span>m = 0.7311</span></div><div><b>−0.242</b><span>m = 0.2689</span></div><div><b>0.258</b><span>m = 0.6457</span></div><div><b>0.552</b><span>m = 0.6900</span></div></div></div>
+  </div>
+  <p class="demo-state">soft mask · W₀ × sigmoid(αG)</p>
+  <p class="demo-live" aria-live="polite"></p>
+  <noscript>JavaScript가 꺼져 있으면 아래 정적 곡선으로 같은 원리를 확인할 수 있습니다.</noscript>
+</div>
+<style>
+#deletion-mask-demo{--demo-ink:#24252a;--demo-muted:#68624f;--demo-paper:#f1eddf;--demo-gold:#9b791f;--demo-rule:#c5bfae;--demo-blue:#356c83;margin:2rem 0;padding:1.2rem;background:var(--demo-paper);color:var(--demo-ink);border-radius:12px}
+.dark #deletion-mask-demo{--demo-ink:#f5f4ee;--demo-muted:#bfb9a6;--demo-paper:#24252a;--demo-gold:#d6bf75;--demo-rule:#5c5b51;--demo-blue:#a4c5d3}
+#deletion-mask-demo p{margin:.5rem 0}#deletion-mask-demo .demo-heading{font-size:1.1rem}#deletion-mask-demo .demo-context{font-size:.88rem;color:var(--demo-muted);line-height:1.6}
+#deletion-mask-demo .demo-controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:1.1rem 0}
+#deletion-mask-demo button{padding:.5rem 1rem;min-height:44px;border:1px solid var(--demo-gold);border-radius:6px;color:var(--demo-ink);font:inherit;background:transparent;cursor:pointer}
+#deletion-mask-demo button:focus-visible,#deletion-mask-demo input:focus-visible{outline:2px solid var(--demo-gold);outline-offset:4px}
+#deletion-mask-demo .demo-mode{min-height:44px;display:flex;align-items:center;gap:.5rem;font-size:.9rem;cursor:pointer}
+#deletion-mask-demo input[type=checkbox]{width:20px;height:20px;accent-color:var(--demo-gold)}
+#deletion-mask-demo .demo-slider-label{display:flex;justify-content:space-between;font-size:.95rem}#deletion-mask-demo output{font-variant-numeric:tabular-nums;color:var(--demo-ink)}
+#deletion-mask-demo .demo-slider{width:100%;height:44px;accent-color:var(--demo-gold);cursor:pointer;margin:0}
+#deletion-mask-demo .demo-matrices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:.5rem 0 1rem}
+#deletion-mask-demo .demo-label{font-size:.9rem;text-align:center;font-weight:600}
+#deletion-mask-demo .demo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+#deletion-mask-demo .demo-grid>div{height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--demo-rule);border-radius:5px;min-width:0}
+#deletion-mask-demo .demo-grid b{font-size:1.28rem;font-weight:600;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+#deletion-mask-demo .demo-grid span{font-size:12px;line-height:1.5;color:var(--demo-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#deletion-mask-demo .demo-effective>div{background:color-mix(in srgb,var(--demo-blue) 12%,transparent);transition:background .15s}
+#deletion-mask-demo .demo-effective>div.is-deleted{background:color-mix(in srgb,var(--demo-gold) 14%,transparent);border-style:dashed}
+#deletion-mask-demo .demo-state{font-size:.87rem;line-height:1.6;color:var(--demo-muted)}
+#deletion-mask-demo .demo-live{position:absolute;clip:rect(0,0,0,0);width:1px;height:1px;overflow:hidden}
+@media(max-width:480px){#deletion-mask-demo{padding:1rem}.demo-matrices{gap:.6rem!important}#deletion-mask-demo .demo-grid b{font-size:1.1rem}#deletion-mask-demo .demo-grid span{font-size:11px}#deletion-mask-demo .demo-grid>div{height:78px}}
+@media(prefers-reduced-motion:reduce){#deletion-mask-demo .demo-effective>div{transition:none}}
+@media print{#deletion-mask-demo{display:none!important}}
+</style>
+<script>
+(() => {
+  const root = document.getElementById('deletion-mask-demo');
+  if (!root) return;
+  const slider = root.querySelector('.demo-slider');
+  const mode = root.querySelector('.demo-mode input');
+  const play = root.querySelector('.demo-play');
+  const cells = [...root.querySelectorAll('.demo-effective>div')];
+  const weights = [1, -.9, .4, .8], logits = [.001, -.001, .0006, .0008];
+  let frame = null;
+  function format(x) { return x === 0 ? '0' : (Math.abs(x) < .001 ? x.toExponential(1) : x.toFixed(3)).replace('-', '−'); }
+  function draw() {
+    const alpha = Number(slider.value), hard = mode.checked;
+    root.querySelector('.demo-alpha').textContent = alpha.toLocaleString('en-US');
+    root.querySelector('.demo-effective-label').textContent = hard ? '평가·배포 유효 W' : '학습 중 유효 W';
+    cells.forEach((cell, i) => {
+      const m = hard ? Number(logits[i] > 0) : 1 / (1 + Math.exp(-alpha * logits[i]));
+      cell.querySelector('b').textContent = format(weights[i] * m);
+      cell.querySelector('span').textContent = 'm = ' + (hard ? m : m.toFixed(4));
+      cell.classList.toggle('is-deleted', hard && m === 0);
+    });
+    root.querySelector('.demo-state').textContent = hard ? 'hard mask · 양수 G는 원래 값 유지, 나머지는 정확히 0' : 'soft mask · W₀ × sigmoid(αG) · 표시는 반올림한 값';
+  }
+  function stop() { if (frame !== null) cancelAnimationFrame(frame); frame = null; play.textContent = '변화 재생'; play.setAttribute('aria-pressed', 'false'); }
+  function announce() { root.querySelector('.demo-live').textContent = (mode.checked ? '최종 이진 마스크' : '부드러운 학습 마스크') + ', α ' + slider.value; }
+  slider.addEventListener('input', () => { stop(); draw(); });
+  slider.addEventListener('change', announce);
+  mode.addEventListener('change', () => { stop(); draw(); announce(); });
+  play.addEventListener('click', () => {
+    if (frame !== null) { stop(); announce(); return; }
+    mode.checked = false;
+    slider.value = '1000';
+    const start = performance.now();
+    play.textContent = '일시정지'; play.setAttribute('aria-pressed', 'true');
+    function tick(now) {
+      const progress = Math.min((now - start) / 7000, 1);
+      slider.value = String(Math.round((1000 + 9000 * progress) / 100) * 100);
+      draw();
+      if (progress < 1) frame = requestAnimationFrame(tick); else { stop(); announce(); }
+    }
+    frame = requestAnimationFrame(tick);
+  });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
+  draw();
+})();
+</script>
