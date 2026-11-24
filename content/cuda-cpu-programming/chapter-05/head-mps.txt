@@ -1,0 +1,8 @@
+source=3_transformer/inference.py@08b406c47fb4
+python=3.13.18 torch=2.15.0 arch=arm64
+device=mps cuda_available=False mps_available=True
+head_input=[1, 4, 768] full_output=[1, 4, 96]
+prefill_key=[1, 3, 96] prefill_value=[1, 3, 96]
+decode_key=[1, 4, 96] decode_value=[1, 4, 96]
+max_abs_diff=1.490e-07
+assert_close=passed (rtol=1e-5, atol=1e-6)

@@ -1,0 +1,15 @@
+source=3_transformer/inference.py@08b406c47fb4
+python=3.13.18 torch=2.15.0 arch=arm64
+device=cpu cuda_available=False mps_available=True
+seed=42 width=768 heads=8 layers=24
+prompt='Once upon a time' max_new_tokens=3 weights=random_init
+=== PyTorch Baseline ===
+Prompt: 'Once upon a time'
+Prompt tokens: [[47, 78, 67, 69, 0, 85, 80, 79, 78, 0, 65, 0, 84, 73, 77, 69]]
+
+Warming up...
+Warm-up complete.
+
+DTZGenerated text: Once upon a timeDTZ
+
+generated_ids=[36, 52, 58]
