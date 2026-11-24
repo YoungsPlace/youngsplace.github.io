@@ -1,26 +1,20 @@
 ---
-title: "CUDA에서 트랜스포머 추론 따라가기 · 프리필, KV 캐시, GEMV"
+title: "CUDA 5장 · 트랜스포머 추론"
 date: 2026-11-24T20:00:00+09:00
 draft: false
 weight: 50
 author: "빵주(kbbangzoo)"
-description: "프롬프트 세 토큰을 출발점으로 디코더의 계산과 메모리 접근을 추적하고, 캐시를 사용한 결과를 전체 재계산과 비교했다."
-summary: "CUDA for LLMs 5장 발표와 공부 노트. 프리필·디코드의 텐서, 캐시 용량, GEMV와 MoE 라우팅을 숫자와 코드로 따라간다."
+description: "CUDA for LLMs 5장. KV 캐시, GEMV, MoE의 top-k와 Mac에서 실행한 PyTorch 예제."
+summary: "프리필과 디코드에서 계산하는 텐서를 비교했다. 저자의 어텐션 헤드로 K/V를 재사용했을 때의 출력도 확인했다."
 showHero: false
 showTableOfContents: true
 ---
 
-프롬프트가 세 토큰 A, B, C이고, 세 토큰을 더 생성한다고 하자. 첫 토큰을 예측할 때는 A, B, C를 한꺼번에 읽을 수 있다. 두 번째 토큰을 예측하려면 첫 예측이 무엇이었는지부터 알아야 한다. 첫 호출에서는 프롬프트의 세 위치를 한꺼번에 처리하고, 다음 호출에서는 새 위치 하나를 계산하면서 앞의 K/V를 읽는다. 이 차이를 저자의 PyTorch 모델과 어텐션 헤드로 확인했다.
-
-교재는 Elliot Arledge의 《CUDA for LLMs》 5장이다. 인쇄면 92–105쪽에서 PyTorch 기준 모델과 CUDA 확장을, 105–117쪽에서 토큰 생성과 KV 캐시·MoE를, 117–125쪽에서 메모리 배치와 GEMV·top-k 커널을 다룬다. [출판사 도서 안내](https://www.manning.com/books/cuda-for-llms)
-
 ## 5.1 트랜스포머 아키텍처와 환경 준비
-
-교재 92쪽부터 시작하는 기준 구현은 PyTorch 문자 모델이다. 같은 텐서를 PyTorch와 CUDA에 넣고 결과를 비교하려면, 먼저 기준 모델의 모양과 연산 순서를 알아야 한다.
 
 ### 5.1.1 기준 모델과 실행 환경
 
-교재의 작은 모델은 《오즈의 마법사》 텍스트를 문자 단위로 읽는다. 토큰 ID는 각 문자를 가리키는 정수다. ID끼리 더하거나 곱해도 문자의 의미가 나오지는 않는다. 대신 학습된 표에서 해당 행을 꺼내 128개 수로 된 벡터를 만든다. 이 모델에서는 여기에 위치별로 학습한 벡터를 더한다. 두 번 나온 같은 문자도 서로 다른 위치에서 다른 입력 벡터를 갖는다.
+교재의 작은 PyTorch 모델은 《오즈의 마법사》를 문자 단위로 읽는다. 문자 ID로 임베딩 테이블에서 128차원 벡터를 꺼내고, 해당 위치의 임베딩을 더한다. 같은 문자라도 위치가 다르면 입력 벡터가 달라진다.
 
 | 기호 | 무엇을 세는가 | 작은 기준 모델에서의 값 |
 |---|---|---:|
@@ -30,25 +24,25 @@ showTableOfContents: true
 | H, D | 어텐션 헤드 수, 헤드 한 개의 너비 | 4, 32 |
 | L, V | 블록 수, 예측할 문자 종류 수 | 8, 65 |
 
-예를 들어 입력 ID가 세 개면 단일 요청의 임베딩 출력은 `[1, 3, 128]`이다. 아래 전개는 교재의 작은 모델을 기준으로 한다. 책 뒷부분의 종단 간 추론 비교에는 너비 768, 헤드 8개, 블록 24개, 어휘 95개인 별도 구성이 등장한다. 둘의 메모리 크기를 비교할 때에는 이 설정도 함께 봐야 한다.
+문자 세 개를 넣으면 임베딩 출력의 모양은 `[1, 3, 128]`이다. 블록을 모두 통과한 뒤에는 각 위치에서 어휘 65개에 대한 점수가 나온다.
 
-한 블록에서 먼저 각 위치의 128개 특성을 LayerNorm으로 정규화한다. 정규화한 벡터에 서로 다른 학습 가중치를 곱해 Q, K, V를 만든다. Q는 현재 위치가 어떤 정보를 찾는지, K는 각 위치가 얼마나 관련되는지 비교할 벡터, V는 점수에 따라 실제로 섞을 정보다. 한 위치의 Q와 각 K의 내적을 구하고 헤드 너비의 제곱근으로 나눈다. 이 모델에서 나누는 값은 √32다. 각 성분의 분산이 비슷하고 대체로 독립이면 성분을 많이 더할수록 내적의 분산이 커진다. 이 스케일링은 점수 크기가 헤드 너비에 따라 지나치게 커지는 것을 줄인다. [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+교재 코드 5.14의 블록은 각 위치의 벡터를 LayerNorm으로 정규화한 뒤 어텐션에 넣는다. 서로 다른 가중치를 곱해 Q, K, V를 만든다. 현재 위치의 Q를 각 위치의 K와 내적해 점수를 구하고, softmax로 얻은 가중치로 V를 섞는다. 내적은 헤드 너비의 제곱근인 √32로 나눈다. 성분이 대체로 독립이고 분산이 비슷할 때, 성분을 많이 더할수록 내적이 크게 출렁이는 것을 이 스케일이 줄여 준다. [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
 
-A, B, C를 처리할 때 B의 행에서 C는 미래다. C 자리에 해당하는 점수를 softmax 전에 음의 무한대로 바꾸면 그 위치의 확률이 0이 된다. 손으로 계산하기 위해 B의 **스케일링 이후** 점수를 `[ln 2, 0, −∞]`라고 놓자. 지수를 취하면 `[2, 1, 0]`, 합으로 나누면 `[2/3, 1/3, 0]`이다. 이 헤드가 B에 돌려주는 벡터는 `(2/3) × V_A + (1/3) × V_B`다. 마지막 위치 C는 A, B, C까지 모두 볼 수 있다. 입력 전체를 병렬 처리하면서도 각 행의 인과 관계가 지켜지는 이유다.
+프롬프트가 A, B, C라면 B는 A와 B까지만 볼 수 있다. B 행에서 스케일과 마스크를 적용한 점수를 `[ln 2, 0, −∞]`로 두면 softmax 결과는 `[2/3, 1/3, 0]`이다. 따라서 B의 출력은 `(2/3) × V_A + (1/3) × V_B`다. 마지막 위치인 C는 세 위치의 V를 모두 섞을 수 있다.
 
-헤드별 결과 네 개를 이어 128차원으로 만들고 출력 투영을 거친 뒤 원래 블록 입력에 더한다. 그다음 다시 LayerNorm을 적용하고, 위치마다 같은 MLP를 실행해 128차원을 512차원으로 넓혔다가 GELU를 거쳐 128차원으로 되돌린다. 결과를 한 번 더 잔차 경로에 더한다. 교재 코드 5.14의 블록은 **정규화 → 서브레이어 → 잔차 덧셈** 순서의 pre-LN 구조다. 어텐션은 위치 간 정보를 섞고, MLP는 각 위치 안의 특성을 변환한다. 마지막 블록 뒤 정규화와 출력층을 거치면 각 위치에서 다음 문자의 점수 65개가 나온다. 이 점수가 logits다.
+네 헤드의 출력을 이어 128차원으로 만들고 출력 투영을 거쳐 블록 입력에 더한다. 이어서 각 위치에 LayerNorm과 MLP를 적용한다. MLP는 128차원을 512차원으로 넓힌 뒤 GELU와 선형층을 거쳐 128차원으로 되돌린다. 이 결과도 잔차에 더한다. 두 연산 모두 정규화가 앞에 오는 pre-LN 구조다. 마지막 출력층이 내는 어휘별 점수를 logits라고 부른다.
 
 #### Python에서 CUDA 커널을 호출하는 경로
 
 교재의 Python 래퍼는 텐서를 받아 C++ 확장의 함수를 호출한다. 빌드할 때 `CUDAExtension`이 C++ 바인딩과 CUDA 소스를 한 모듈로 연결한다. 저자 코드의 GEMV 래퍼는 행렬과 벡터가 CUDA 텐서인지, 둘 다 FP32인지, 곱할 차원이 맞는지 확인한 뒤 출력 텐서를 만든다. 커널에는 포인터와 크기만 넘긴다. 커널이 행 주소를 낼 때는 입력이 행 우선으로 연속 저장돼 있다고 가정한다. 같은 Python 모델을 두고 한 연산씩 교체해 기준 출력과 비교할 수 있다. [저자 GEMV 래퍼와 커널 호출](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/csrc/inference/kernels/gemv_fwd.cu#L45-L80) · [PyTorch C++·CUDA 확장](https://docs.pytorch.org/docs/stable/cpp_extension.html)
 
-여기에는 두 종류의 실행 문맥이 있다. 여러 GPU를 쓰면 입력이 있는 장치가 어느 GPU인지 확인하고 device guard로 장치를 설정한다. 같은 장치에서도 커널이 어느 스트림에 들어가는지에 따라 이전 연산과의 실행 순서가 결정된다. 원본 GEMV의 커널 호출은 스트림을 명시하지 않는다. 파이토치에서 별도 스트림을 쓰는 확장이라면 해당 장치의 현재 스트림으로 커널을 보내거나 스트림 간 의존성을 명시해 실행 순서를 맞춘다. `float*`를 받는 커널이라면 텐서 dtype과 해당 포인터 타입의 일치 여부도 확인한다. [PyTorch CUDA 실행 의미론](https://docs.pytorch.org/docs/stable/notes/cuda.html)
+원본 GEMV는 device guard로 행렬이 놓인 GPU를 선택한다. 커널 호출에서 스트림 인자는 생략한다. PyTorch 텐서를 별도 스트림에서 만들었다면, 커널도 같은 스트림으로 보내거나 이벤트로 대기 관계를 걸어야 텐서가 준비된 뒤 읽는다. [PyTorch CUDA 실행 의미론](https://docs.pytorch.org/docs/stable/notes/cuda.html)
 
 #### 저자 코드로 로컬 실습 환경 준비하기
 
 Mac에 만든 실습 폴더는 `cuda-study/chapter-05/`다. `book.cu/3_transformer/`에 원본을 두고, 옆에 둔 실행 스크립트에서 저자의 함수를 불러왔다. [저자 코드](https://github.com/Infatoshi/book.cu/tree/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer) · [실행 스크립트](run_book.py) · [패키지 버전](requirements.txt)
 
-아래는 새 폴더에 같은 환경을 만드는 명령이다. 위의 `run_book.py`와 `requirements.txt`를 그 폴더에 내려받은 뒤 실행한다. 실행 환경은 Apple M5 Pro, Python 3.13.18, PyTorch 2.15.0이다.
+실습 장비는 Apple M5 Pro다. 새 폴더에서 재실행할 경우 `run_book.py`와 `requirements.txt`를 같은 곳에 두고 Python 3.13 가상환경을 만든다. 로그에 찍힌 버전은 Python 3.13.18, PyTorch 2.15.0이다.
 
 ```sh
 git clone --filter=blob:none --sparse https://github.com/Infatoshi/book.cu.git
@@ -60,11 +54,9 @@ python3.13 -m venv .venv
 
 ## 5.2 추론 이론과 최적화
 
-프롬프트를 한 번 읽는 구간과 토큰을 하나씩 생성하는 구간에서 텐서의 모양이 어떻게 달라지는지 따라간다.
-
 ### 5.2.1 자기회귀 생성 최적화
 
-학습할 때는 원문을 한 칸 옮겨 정답을 만들 수 있다. `[A, B, C]`를 입력했다면 각 위치가 B, C, 그다음 문자를 예측하도록 손실을 계산한다. 추론할 때 프롬프트는 이미 주어져 있어서 그 구간은 한꺼번에 처리할 수 있다. 이를 **프리필(prefill)**이라고 한다. 그 뒤 새로 뽑은 토큰을 한 개씩 넣어 후속 토큰을 구하는 구간이 **디코드(decode)**다.
+프롬프트 A, B, C를 한 번에 처리하는 단계가 프리필(prefill)이다. C 위치의 logits로 D를 고른다. 이어지는 디코드(decode)에서는 D를 모델에 넣어 E를 고른다.
 
 | 호출 | 넣은 ID와 위치 | 호출 후 유효한 K/V 위치 | 다음 토큰을 고르는 출력 |
 |---|---|---|---|
@@ -72,9 +64,7 @@ python3.13 -m venv .venv
 | 첫 디코드 | D@3 | 0, 1, 2, 3 | D 행에서 E 선택 |
 | 둘째 디코드 | E@4 | 0, 1, 2, 3, 4 | E 행에서 F 선택 |
 
-표의 D, E, F는 차례로 선택한 토큰에 붙인 이름이다. 세 개를 요청했다면 F를 얻은 시점에서 끝낼 수 있다. 프리필 마지막 행이 이미 첫 생성에 필요한 점수를 주므로 C를 다시 넣으면 위치 3에 C가 하나 더 생긴다. 이미 저장한 위치 수와 새 토큰의 위치 ID를 함께 추적하면 이런 오류를 찾기 쉽다. [Hugging Face의 캐시와 위치 설명](https://huggingface.co/docs/transformers/cache_explanation)
-
-교재 코드 5.22를 공개 예제와 대조할 때는 프리필이 돌려준 캐시와 첫 생성 입력을 같이 본다. 공개 예제의 해당 버전에서는 PyTorch 블록이 일반 경로에서 캐시를 반환하지 않고, 생성 루프도 프롬프트의 마지막 토큰을 다시 입력한다. 아래의 작은 파이썬 예제에서는 표처럼 프리필의 마지막 logits에서 첫 토큰을 고른다. [블록의 반환값](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/inference.py#L268-L281) · [생성 루프](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/inference.py#L734-L747)
+새 토큰 세 개를 요청했다면 F를 고른 시점에 끝난다. 마지막으로 캐시에 추가된 위치는 E다. [Hugging Face의 캐시와 위치 설명](https://huggingface.co/docs/transformers/cache_explanation)
 
 #### 캐시에 K와 V를 저장하는 이유
 
@@ -87,7 +77,7 @@ python3.13 -m venv .venv
 | 유효한 K와 V 각각 | `[1, H, P, D]` | `[1, H, P+1, D]` |
 | 어텐션 점수의 논리적 모양 | `[1, H, P, P]` | `[1, H, 1, P+1]` |
 
-프롬프트 전체에 대응하는 K/V를 만들고 나면 이후 **K/V를 새로 투영하는 위치는 매번 한 개**다. 반면 현재 Q가 비교할 K와 가중합에 읽을 V는 문맥이 길어질수록 많아진다. 길이 P의 프롬프트에서 A개 토큰을 더 뽑을 때 첫 토큰을 제외한 A−1번의 디코드가 필요하다. 표준 전 구간 어텐션의 한 헤드에서 이 디코드들의 Q·K 내적 수는 `(P+1) + … + (P+A−1)`이다. 장문 생성에서 캐시 읽기 대역폭이 중요한 이유다.
+새로 투영하는 K/V는 토큰 한 개분이다. 그래도 새 Q는 과거의 K를 모두 읽고, 가중합에 과거의 V를 모두 쓴다. 전체 문맥을 보는 어텐션에서는 프롬프트 길이가 P일 때 첫 디코드의 헤드당 Q·K 내적이 P+1개이고, 다음 스텝에는 P+2개로 늘어난다.
 
 #### KV 캐시 크기를 바이트로 계산하기
 
@@ -99,9 +89,9 @@ python3.13 -m venv .venv
 
 작은 예제의 L=8, B=1, S=64, H=4, D=32에 FP32(4바이트)를 가정하면 `2 × 8 × 1 × 64 × 4 × 32 × 4 = 524,288`바이트, 즉 512 KiB다. B=1에서 한 위치를 추가할 때 드는 유효 데이터는 8 KiB다. 최대 길이 64를 미리 할당한 구현은 처음부터 512 KiB의 버퍼를 잡고 유효 길이만 늘릴 수 있다. 모델 가중치, 임시 텐서, 패딩, 할당기 여유분은 이 계산의 범위 밖이다. [Hugging Face의 캐시 구현과 메모리 선택](https://huggingface.co/docs/transformers/kv_cache)
 
-#### 원본 실습 · 어텐션 헤드의 캐시를 CPU와 Apple GPU에서 검산하기
+#### 어텐션 헤드의 캐시 검산
 
-저자의 추론 코드에 정의된 `Head.forward()`를 직접 호출했다. 배치 하나에 FP32 입력 네 위치를 준비했다. 각 위치의 벡터는 768차원이고, 단일 헤드 실험에서는 `Head(96)`을 생성해 Q·K·V의 폭을 96으로 지정했다. 원본 모델 전체의 캐시 크기와는 별도로 정한 실험 조건이다. 첫 경로에서는 네 위치를 한 번에 넣고 마지막 출력을 꺼냈다. 두 번째 경로에서는 앞 세 위치에서 받은 K/V에 넷째 위치 한 개를 이어 넣었다. 두 경로에 같은 가중치와 입력을 썼다. [저자의 Head.forward](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/inference.py#L141-L177)
+저자 코드에서 `Head(96)` 하나를 꺼내 실행했다. 입력은 −1에서 1까지 균등하게 만든 FP32 값 3,072개를 `[1, 4, 768]`로 바꿨다. 네 위치를 한 번에 계산한 뒤 마지막 위치의 출력을 꺼냈다. 같은 헤드에 앞 세 위치의 K/V와 넷째 위치를 넘겨 계산한 결과를 이 출력과 비교했다. [저자의 Head.forward](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/inference.py#L141-L177)
 
 ```sh
 .venv/bin/python run_book.py head --device cpu
@@ -113,7 +103,7 @@ python3.13 -m venv .venv
 | Mac CPU | `[1, 3, 96]` | `[1, 4, 96]` | `2.291e-07` |
 | Apple GPU · MPS | `[1, 3, 96]` | `[1, 4, 96]` | `1.490e-07` |
 
-늘어난 축은 가운데의 위치 수다. 표의 오차는 **각 장치 안에서** 전체 계산과 캐시 계산의 마지막 출력 96개를 비교한 값이다. 두 장치 모두 `torch.testing.assert_close(rtol=1e-5, atol=1e-6)`를 통과했다. 검산 범위는 저자 모델에서 떼어 실행한 헤드 하나다. Apple GPU 경로는 PyTorch의 Metal 백엔드인 MPS를 썼다. [CPU 실행 로그](head-cpu.txt) · [MPS 실행 로그](head-mps.txt)
+K와 V에서 위치를 나타내는 가운데 축이 3에서 4로 늘었다. 각 장치에서 마지막 위치의 출력 96개를 대조했고, 둘 다 `torch.testing.assert_close(rtol=1e-5, atol=1e-6)`를 통과했다. Apple GPU는 PyTorch의 MPS 백엔드로 실행했다. [CPU 실행 로그](head-cpu.txt) · [MPS 실행 로그](head-mps.txt)
 
 #### 작은 예제로 투영과 내적 횟수 세기
 
@@ -132,26 +122,26 @@ max_abs_logit_diff=0.00e+00
 generated [3, 3, 2]
 ```
 
-`kv_rows`는 한 위치의 K와 V를 한 쌍으로 세었다. 전체 재계산은 3+4+5=12개, 캐시는 3+1+1=5개다. `qk_pairs`는 인과 마스크 안에서 실제로 계산한 Q·K 내적 수다. 전체 재계산은 길이 3, 4, 5의 삼각형을 매번 그려 6+10+15=31개다. 캐시는 최초 삼각형 6개에 새 행 4개, 5개를 더해 15개다. 세 번 비교한 출력 logits는 모두 일치했다. 이 숫자는 이 CPU 구현의 연산 횟수다. GPU 커널이 마스킹한 위치까지 물리적으로 계산하는지, 실행 시간이 얼마나 줄어드는지는 별도 측정 대상이다.
+`kv_rows`는 한 위치의 K와 V를 한 쌍으로 세었다. 전체 재계산은 3+4+5=12개, 캐시는 3+1+1=5개다. `qk_pairs`는 인과 마스크 안에서 실제로 계산한 Q·K 내적 수다. 전체 재계산은 길이 3, 4, 5의 삼각형을 매번 그려 6+10+15=31개다. 캐시는 최초 삼각형 6개에 새 행 4개, 5개를 더해 15개다. 세 번 비교한 출력 logits는 모두 일치했다. 이 횟수는 CPU 예제에서 센 값이다.
 
-두 경로가 같은 함수를 공유하면 같은 계산 오류를 함께 통과할 수 있다. [verify_trace.py](verify_trace.py)는 NumPy로 `Q @ K.T`를 통째로 구하고 미래 위치를 가린 다음 모든 행의 출력 벡터를 한꺼번에 계산한다. 위 두 파일을 같은 폴더에 두고, NumPy가 설치된 환경에서 실행한다. Python 3.12.14, NumPy 2.3.5에서 길이 1–4인 모든 입력 340개를 대조했다.
+별도 NumPy 구현에서도 `Q @ K.T`를 구해 마스크를 적용하고, 길이 1–4인 입력 340개의 logits를 대조했다. Python 3.12.14와 NumPy 2.3.5에서 실행했다. [검산 코드](verify_trace.py)
 
 ```console
 $ python3 verify_trace.py
 prefixes=340 max_abs_logit_diff=2.220e-16
 ```
 
-이 검산에서는 마지막에 뽑힌 토큰 하나만 보지 않고 중간 위치를 포함한 **모든 logit**을 확인했다. `1e-12` 절대·상대 허용 오차 안에서 일치했다. 지금 사용한 배정밀도 CPU 예제의 허용 오차다. CUDA에서 FP32·FP16을 비교할 때에는 연산 순서와 정밀도, 입력 크기를 고려해 기준을 다시 정한다. [PyTorch의 수치 정확도](https://docs.pytorch.org/docs/stable/notes/numerical_accuracy.html)
+모든 위치의 logits가 `rtol=1e-12, atol=1e-12`를 통과했다. [PyTorch의 수치 정확도](https://docs.pytorch.org/docs/stable/notes/numerical_accuracy.html)
 
 #### MoE에서 토큰이 사용할 전문가 고르기
 
-밀집 모델에서는 각 토큰이 블록의 같은 MLP를 통과한다. MoE(Mixture of Experts) 블록에는 가중치가 다른 여러 MLP와 라우터가 있다. 교재 방식에서는 라우터가 전문가마다 점수를 계산하고, 상위 k개의 전문가를 골라 가중치를 다시 정규화한 뒤 각 전문가의 출력 벡터를 가중합한다. 교재의 큰 모델 설정은 전문가 8개 중 2개를 고른다. 선택된 전문가에게만 토큰을 보내는 구현에서는 전문가 계산을 줄일 수 있다. 반면 이 버전의 PyTorch 예제는 모든 전문가의 출력을 먼저 계산한 뒤 선택한 두 결과를 섞는다. [저자 코드의 전문가 계산과 가중합](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/inference.py#L230-L257) [Sparsely-Gated Mixture-of-Experts 원 논문](https://arxiv.org/abs/1701.06538)
+밀집 모델에서는 각 토큰이 블록의 같은 MLP를 통과한다. MoE(Mixture of Experts) 블록에는 가중치가 다른 여러 MLP와 라우터가 있다. 교재 방식에서는 라우터가 전문가마다 점수를 계산하고, 상위 k개의 전문가를 골라 가중치를 다시 정규화한 뒤 각 전문가의 출력 벡터를 가중합한다. 교재의 큰 모델 설정은 전문가 8개 중 2개를 고른다. 선택된 전문가에게만 토큰을 보내면 전문가 계산을 줄일 수 있다. 이 소스의 PyTorch 경로는 전문가 8개를 모두 실행하고 선택한 두 결과를 섞는다. [저자 코드의 전문가 계산과 가중합](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/inference.py#L230-L257) · [Sparsely-Gated Mixture-of-Experts 원 논문](https://arxiv.org/abs/1701.06538)
 
-손계산 예로 전문가 4개의 확률이 0번부터 `[0.1, 0.3, 0.2, 0.4]`라면 top-2 인덱스는 3, 1이다. 두 확률의 합 0.7로 나누면 최종 혼합은 `(4/7) × expert_3(x) + (3/7) × expert_1(x)`다. 이는 블록 **안에서** 어느 전문가의 벡터를 사용할지 결정한다. 다음 출력 문자를 고를 때에는 모델 **마지막**의 어휘 점수에서 고른다. 앞의 작은 모델은 65개, 로컬에서 실행한 원본 추론 예제는 95개다. 둘 다 top-k를 쓸 수 있지만 입력의 길이와 결과의 의미가 다르다.
+손계산 예로 전문가 4개의 확률이 0번부터 `[0.1, 0.3, 0.2, 0.4]`라면 top-2 인덱스는 3, 1이다. 두 확률의 합 0.7로 나누면 최종 혼합은 `(4/7) × expert_3(x) + (3/7) × expert_1(x)`다. 여기서 고른 인덱스는 블록 안의 전문가 ID다. 디코딩에서 다음 문자를 고를 때는 모델 끝의 어휘별 logits를 사용한다.
 
-### 5.2.2 최적화한 추론 구성의 실행과 검증
+### 5.2.2 추론 실행과 성능 검증
 
-저자 예제에서 모델 전체를 실행하는 함수는 `run_pytorch_baseline()`이다. 이 함수는 폭 768, 헤드 8개, 블록 24개인 모델을 만들고 시드 42로 가중치를 초기화한다. 학습된 가중치를 읽는 단계는 없다. 프롬프트와 모델 설정은 원본대로 두고, 로컬 실행 스크립트에서 장치를 CPU로, 새 토큰 수를 3으로 지정했다. [저자의 원본 함수](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/inference.py#L282-L328)
+저자의 `run_pytorch_baseline()`을 Mac CPU에서 실행했다. 원본대로 폭 768, 헤드 8개, 블록 24개인 모델을 쓰고 시드 42로 가중치를 무작위 초기화했다. 원본 프롬프트를 넣고 새 토큰을 세 개만 생성했다. [저자의 원본 함수](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/inference.py#L282-L328)
 
 ```sh
 .venv/bin/python run_book.py generate --device cpu
@@ -161,27 +151,27 @@ prefixes=340 max_abs_logit_diff=2.220e-16
 |---|---:|---|---|
 | `Once upon a time` | 16자 | `[36, 52, 58]` | `DTZ` |
 
-원본의 어휘표는 공백을 0번으로 삼는다. 첫 출력 ID 36에 32를 더하면 ASCII 68, 즉 `D`가 된다. 같은 방식으로 52와 58은 `T`와 `Z`다. 여기서 확인한 것은 무작위 초기 가중치를 사용한 모델이 입력 문자를 ID로 바꾸고, 다음 ID 세 개를 선택해 다시 문자로 돌려주는 과정이다. [CPU 생성 로그 전문](generate-cpu.txt)
+원본의 어휘표는 공백부터 시작하는 ASCII 문자 95개다. 출력 ID 36에 32를 더하면 ASCII 68인 `D`가 된다. [CPU 생성 로그](generate-cpu.txt)
+
+이 버전의 `run_pytorch_baseline()`은 프리필 logits를 버리고 프롬프트의 마지막 문자를 디코드의 첫 입력으로 다시 넣는다. `Block.forward()`의 프리필 경로는 K/V를 `None`으로 돌려준다. 위의 생성 결과는 이 루프의 출력이고, 앞에서 수행한 캐시 검산은 `Head.forward()` 하나의 결과다. [블록의 반환값과 실행 루프](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/inference.py#L268-L319)
 
 #### 첫 토큰 지연과 디코드 처리량
 
-먼저 같은 입력과 가중치로 PyTorch 기준 구현과 커스텀 연산을 비교한다. GEMV는 출력 벡터, softmax는 각 행의 확률과 마스킹, top-k는 값·인덱스·동점 규칙, 디코드는 위치별 캐시 길이와 logits를 본다. 여러 토큰을 연달아 생성하면 한 번의 선택이 다음 입력 전체를 바꾼다. 첫 차이가 발생한 위치에 **양쪽 모두 같은 접두사**를 주고 logits와 전문가 선택을 비교하면 차이가 어디에서 생겼는지 좁힐 수 있다. 동일한 체크포인트와 greedy 규칙의 짧은 출력 토큰열도 함께 비교하면 된다. [PyTorch assert_close](https://docs.pytorch.org/docs/stable/testing.html#torch.testing.assert_close)
+생성 결과가 갈라지면 처음 다른 토큰이 나온 위치를 찾는다. 양쪽에 같은 접두사를 넣고 그 위치의 logits와 MoE 전문가 ID를 비교하면, 첫 오차와 이후 다른 입력에서 생긴 차이를 나눠 볼 수 있다. [PyTorch assert_close](https://docs.pytorch.org/docs/stable/testing.html#torch.testing.assert_close)
 
-그다음 시간을 잰다. 요청을 보내 첫 토큰을 받기까지가 TTFT이고, 후속 토큰 간 간격은 ITL이다. 출력 3개를 받았다면 첫 토큰과 마지막 토큰 사이에는 간격이 2개 있다. 이 구간의 평균 디코드 토큰 속도는 `2 / (마지막 도착 시각 − 첫 도착 시각)`이다. 동시 요청 전체의 처리량을 보고 싶다면 관측 구간에 보낸 총 출력 토큰 수를 그 구간의 시간으로 나눈다. 입력 길이, 출력 길이, 배치, 정밀도, 하드웨어와 분모를 고정해야 서로 비교할 수 있다. [NVIDIA의 LLM 추론 성능 지표](https://docs.nvidia.com/nim/benchmarking/llm/metrics)
+TTFT는 요청을 보낸 뒤 첫 토큰이 돌아올 때까지의 시간이다. ITL은 토큰과 다음 토큰 사이의 간격이다. 출력 3개를 받았다면 첫 토큰과 마지막 토큰 사이에는 간격이 2개 있다. 이 구간의 평균 디코드 토큰 속도는 `2 / (마지막 도착 시각 − 첫 도착 시각)`이다. 동시 요청 전체의 처리량을 보고 싶다면 관측 구간에 보낸 총 출력 토큰 수를 그 구간의 시간으로 나눈다. 입력 길이, 출력 길이, 배치, 정밀도, 하드웨어와 분모를 고정해야 서로 비교할 수 있다. [NVIDIA의 LLM 추론 성능 지표](https://docs.nvidia.com/nim/benchmarking/llm/metrics)
 
-CUDA 커널은 일반적으로 비동기 제출된다. Python에서 호출 직후 시계를 읽으면 아직 GPU에서 일을 끝내지 않았을 수 있다. 워밍업한 뒤 같은 스트림의 CUDA 이벤트로 GPU 구간을 재고, 사용자 지연을 알고 싶을 때는 토큰이 실제로 돌아올 때까지의 시간을 따로 잰다. 교재 그림 5.12에 실린 값은 PyTorch가 첫 토큰까지 12 ms, 디코드 95 tok/s이고, 기본 CUDA 구현이 16 ms, 85 tok/s다. 이는 책의 GPU 비교 결과다. PyTorch의 선형층과 연산자도 이미 최적화된 GPU 라이브러리를 사용할 수 있다. 6장에서 다룰 문제는 그 차이를 **어느 커널의 어떤 메모리 접근이나 실행 비용으로 설명할 수 있는가**다.
+CUDA 커널은 일반적으로 비동기 제출된다. Python에서 호출 직후 시계를 읽으면 아직 GPU에서 일을 끝내지 않았을 수 있다. 워밍업한 뒤 같은 스트림의 CUDA 이벤트로 GPU 구간을 재고, 사용자 지연을 알고 싶을 때는 토큰이 실제로 돌아올 때까지의 시간을 따로 잰다. 교재 그림 5.12에 실린 값은 PyTorch가 첫 토큰까지 12 ms, 디코드 95 tok/s이고, 기본 CUDA 구현이 16 ms, 85 tok/s다.
 
 ## 5.3 추론 커널
 
-같은 선형층도 프롬프트 전체를 읽을 때와 한 위치만 처리할 때 가중치를 재사용하는 횟수가 다르다. 커널이 받는 버퍼의 배치부터 확인한다.
-
 ### 5.3.1 메모리 배치와 연속성
 
-CUDA는 스레드를 블록으로 묶고, 블록은 GPU의 스트리밍 멀티프로세서(SM)에 배정된다. 여기서 주소를 비교할 단위는 한 워프의 스레드 32개다. CPU와 GPU의 실행 구조부터 읽으려면 별준의 [GPU와 CUDA](https://junstar92.tistory.com/243), 행렬 주소 계산은 [CUDA의 메모리 접근과 행렬곱](https://junstar92.tistory.com/248)에서 예제와 함께 볼 수 있다.
+CUDA의 스레드는 블록으로 묶이고, 각 블록은 GPU의 SM에 배정된다. 메모리 접근을 볼 때는 한 워프의 스레드 32개가 같은 명령에서 읽는 주소를 함께 본다. [별준의 GPU와 CUDA](https://junstar92.tistory.com/243) · [행렬곱의 메모리 접근](https://junstar92.tistory.com/248)
 
 행 우선으로 저장한 2×3 행렬의 물리적 원소 순서를 `[a,b,c,d,e,f]`라고 하자. 이 행렬의 원소 단위 stride는 `(3,1)`이다. 전치한 뷰는 모양이 3×2이고 stride가 `(1,3)`이 된다. 이 뷰의 `[0,1]`은 원본에서 오프셋 3인 d다. 같은 주소에 대해 연속 행렬을 가정해 `row * 2 + col`을 적용하면 오프셋 1인 b를 읽는다. 커널은 stride를 인자로 받아 색인하거나, 연속 입력만 받도록 계약을 정하고 래퍼에서 필요할 때 복사할 수 있다. 이미 연속인 텐서에서 `.contiguous()`는 자기 자신을 돌려준다. [PyTorch Tensor Views](https://docs.pytorch.org/docs/stable/tensor_view.html)
 
-또 다른 질문은 동시에 실행되는 스레드들이 어느 주소를 읽느냐다. FP32 행렬의 열 수가 128이고 인접 스레드가 서로 다른 행을 맡았다고 하자. 각 스레드가 0번 열을 읽는 그 순간 인접 스레드의 주소 차는 128×4=512바이트다. 한 스레드는 다음 반복에서 바로 옆 열로 가지만, 한 워프가 같은 명령을 실행하는 순간에는 주소가 흩어진다. 이처럼 **텐서의 contiguous는 저장 배치**, **coalescing은 워프의 한 메모리 명령에서 주소가 묶이는 방식**을 말한다. 다음 장에서는 같은 행의 여러 열을 나눠 읽고 부분합을 합치는 방법을 이 출발점과 비교한다. [NVIDIA CUDA Best Practices Guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#coalesced-access-to-global-memory)
+또 다른 질문은 동시에 실행되는 스레드들이 어느 주소를 읽느냐다. FP32 행렬의 열 수가 128이고 인접 스레드가 서로 다른 행을 맡았다고 하자. 각 스레드가 0번 열을 읽는 그 순간 인접 스레드의 주소 차는 128×4=512바이트다. 한 스레드는 다음 반복에서 바로 옆 열로 가지만, 한 워프가 같은 명령을 실행하는 순간에는 주소가 흩어진다. 이 예에서는 텐서가 연속 저장돼 있어도 같은 명령을 실행하는 워프의 스레드들이 멀리 떨어진 주소를 읽는다. 6장의 GEMV에서는 같은 행의 여러 열을 나눠 읽은 뒤 부분합을 합친다. [NVIDIA CUDA Best Practices Guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#coalesced-access-to-global-memory)
 
 ### 5.3.2 디코드의 행렬·벡터 곱(GEMV)
 
@@ -201,7 +191,7 @@ __global__ void project_one(const float* w, const float* x, float* y,
 }
 ```
 
-M=N=128인 FP32 가중치는 64 KiB다. 곱과 덧셈을 2 FLOP으로 세면 산술량은 약 32,768 FLOP이다. 가중치를 한 번 읽는 바이트만 분모에 두면 약 0.5 FLOP/byte다. 입력 읽기와 출력 쓰기까지 더하면 이 근삿값은 작아진다. 여러 위치가 가중치를 재사용하면 같은 수의 가중치 바이트로 더 많은 산술 연산을 할 수 있다. 이 계산은 큰 배치에서 GEMM이 유리할 수 있는 이유를 보여 준다. 실제 병목에는 캐시 적중과 커널 실행 지연도 영향을 준다. 배치가 큰 디코드에서는 여러 요청의 새 토큰을 모아 GEMM 형태로 처리할 수도 있다. [NVIDIA의 행렬곱과 연산 집약도](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html)
+M=N=128인 FP32 가중치는 64 KiB다. 곱과 덧셈을 2 FLOP으로 세면 산술량은 약 32,768 FLOP이다. 가중치를 한 번 읽는 바이트만 분모에 두면 약 0.5 FLOP/byte다. 입력 읽기와 출력 쓰기까지 더하면 이 근삿값은 작아진다. 여러 위치가 가중치를 재사용하면 같은 수의 가중치 바이트로 더 많은 산술 연산을 할 수 있다. 디코드에서도 여러 요청의 새 토큰을 모아 GEMM으로 처리하면 가중치를 재사용할 수 있다. [NVIDIA의 행렬곱과 연산 집약도](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html)
 
 #### 2행 3열 GEMV를 실행해 보기
 
@@ -213,14 +203,8 @@ $ ./gemv_cpu
 CPU: [3, 9]
 ```
 
-NVIDIA GPU와 CUDA Toolkit이 있는 환경에서 쓰는 명령은 `nvcc -std=c++17 -O2 gemv.cu -o gemv_gpu && ./gemv_gpu`다. CUDA 경로는 W와 x를 한 번 복사하고 블록 하나에 스레드 128개를 띄운다. 이 입력에는 행이 둘뿐이므로 스레드 0과 1이 결과를 쓰고 나머지는 범위 검사에서 빠진다. 작은 행렬은 인덱스와 결과를 손으로 확인하기 위한 입력이다.
+NVIDIA GPU와 CUDA Toolkit이 있는 환경에서 쓰는 명령은 `nvcc -std=c++17 -O2 gemv.cu -o gemv_gpu && ./gemv_gpu`다. CUDA 경로는 W와 x를 한 번 복사하고 블록 하나에 스레드 128개를 띄운다. 이 입력에는 행이 둘뿐이므로 스레드 0과 1이 결과를 쓰고 나머지는 범위 검사에서 빠진다.
 
 #### MoE 라우팅의 top-k 커널
 
-k가 작다면 한 스레드가 토큰 하나를 맡아 전문가 점수를 훑으며 지금까지 가장 큰 k개와 원래 인덱스를 유지할 수 있다. 정렬된 길이 k의 작은 배열에 삽입하면 전문가 E개에 대해 최악의 경우 O(Ek) 비교·이동을 한다. 작은 E와 k에서는 구현이 단순하고, E나 토큰 수가 커지면 여러 스레드의 병렬 선택·축약이 유리해질 수 있다. 선택 경계에서 두 점수 차이가 작으면 부동소수점 반올림만으로 전문가가 달라질 수 있다. 동점일 때 인덱스 순서가 필요한 애플리케이션은 정책을 정해야 한다. [PyTorch topk의 동점 처리](https://docs.pytorch.org/docs/stable/generated/torch.topk.html) [저자 top-k 커널](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/csrc/inference/kernels/topk_fwd.cu)
-
-## 정리
-
-1. **A, B, C를 넣고 D, E, F를 출력할 때 왜 F는 캐시에 없어도 될까?** 프리필로 D를 고르고 D로 E, E로 F를 고른다. 다음 토큰을 더 요청할 때 F의 K/V가 필요하다.
-2. **캐시를 켜면 새 K/V는 한 위치분인데, 긴 문맥에서는 왜 느려질 수 있을까?** 새 Q가 비교할 과거 위치와 읽을 V의 수는 계속 늘어난다. 누적 투영 수와 한 스텝에 읽는 데이터양은 서로 다른 값이다.
-3. **텐서를 연속으로 만들면 6장의 메모리 최적화도 끝날까?** 행렬의 물리적 배치를 정한 다음, 같은 순간에 이웃 스레드가 읽는 주소를 따져야 한다. GEMV에서 한 스레드가 한 행을 맡도록 하면 이 두 조건의 차이가 드러난다.
+저자의 top-k 커널은 토큰마다 블록 하나를 띄우고, 그 안의 스레드 하나가 전문가 점수와 인덱스를 순서대로 읽는다. 상위 k개를 정렬해 유지하므로 전문가 E개에 대해 최악 O(Ek)번 비교하고 옮긴다. 2위와 3위처럼 선택 경계에 놓인 점수가 가까우면 반올림으로 선택이 달라질 수 있다. [PyTorch topk의 동점 처리](https://docs.pytorch.org/docs/stable/generated/torch.topk.html) · [저자 top-k 커널](https://github.com/Infatoshi/book.cu/blob/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer/csrc/inference/kernels/topk_fwd.cu)
