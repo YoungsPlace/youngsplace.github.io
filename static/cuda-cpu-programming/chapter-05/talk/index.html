@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="ko">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  /><title>CUDA에서 따라가는 트랜스포머 추론 · YoungsPlace</title
+  ><style>
+    :root {
+      color-scheme: dark;
+      --bg: #10252a;
+      --ink: #f7f5eb;
+      --quiet: #bfd1d1;
+      --signal: #ffbd80;
+      --rule: #507074;
+      font-family:
+        system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: clamp(17px, 1.65vw, 29px);
+      line-height: 1.47;
+      word-break: keep-all;
+    }
+    main,
+    header,
+    footer,
+    #notes {
+      max-width: 1160px;
+      margin: auto;
+      padding-inline: clamp(16px, 5vw, 68px);
+    }
+    header,
+    footer {
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      flex-wrap: wrap;
+    }
+    header {
+      min-height: 58px;
+      color: var(--quiet);
+      font-size: 15px;
+      border-bottom: 1px solid var(--rule);
+      justify-content: space-between;
+    }
+    a {
+      color: var(--signal);
+      text-underline-offset: 0.2em;
+    }
+    article {
+      padding-block: clamp(25px, 5vh, 58px);
+      min-height: min(62vh, 680px);
+    }
+    h1 {
+      font-size: clamp(32px, 4.05vw, 65px);
+      line-height: 1.15;
+      letter-spacing: -0.035em;
+      margin: 0.12em 0 0.6em;
+    }
+    p {
+      max-width: 47em;
+    }
+    .lead,
+    .formula {
+      font-size: 1.25em;
+      line-height: 1.42;
+    }
+    .formula {
+      color: var(--signal);
+    }
+    .math {
+      font-family: ui-monospace, monospace;
+      font-size: clamp(25px, 3vw, 48px);
+      color: var(--signal);
+      margin: 0.45em 0;
+      line-height: 1.28;
+    }
+    .tokens {
+      display: flex;
+      gap: 0.55em;
+      margin: 1em 0;
+    }
+    .tokens span {
+      display: grid;
+      place-items: center;
+      width: 2.15em;
+      height: 2.15em;
+      border: 1px solid var(--rule);
+      border-radius: 0.17em;
+      font:
+        600 1.6em ui-monospace,
+        monospace;
+    }
+    .tokens span:last-child {
+      color: var(--signal);
+      border-color: var(--signal);
+    }
+    .scroll {
+      overflow-x: auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      line-height: 1.35;
+    }
+    td,
+    th {
+      padding: 0.53em 0.5em;
+      border-bottom: 1px solid var(--rule);
+      text-align: left;
+    }
+    th {
+      color: var(--signal);
+      font-weight: 600;
+    }
+    pre {
+      overflow-x: auto;
+      background: #0a191b;
+      border-left: 3px solid var(--signal);
+      padding: 0.8em;
+      margin: 0.6em 0;
+      font:
+        0.89em/1.55 ui-monospace,
+        Menlo,
+        monospace;
+    }
+    input[type="range"] {
+      width: min(360px, 80%);
+      display: block;
+      accent-color: var(--signal);
+      margin: 0.35em 0;
+    }
+    footer {
+      padding-block: 0.65em;
+      border-top: 1px solid var(--rule);
+      font-size: 15px;
+    }
+    button,
+    select {
+      font: inherit;
+      color: var(--ink);
+      background: #20393b;
+      border: 1px solid var(--rule);
+      border-radius: 0.26em;
+      padding: 0.45em 0.7em;
+      min-height: 38px;
+    }
+    button {
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.42;
+      cursor: default;
+    }
+    button:hover:enabled,
+    select:hover {
+      border-color: var(--signal);
+    }
+    :focus-visible {
+      outline: 3px solid var(--signal);
+      outline-offset: 3px;
+    }
+    h1[tabindex="-1"]:focus {
+      outline: none;
+    }
+    #notes {
+      padding-block: 0.5em 2em;
+      font-size: 18px;
+      color: var(--quiet);
+    }
+    #notes strong {
+      display: block;
+      color: var(--signal);
+    }
+    .stepper {
+      border-left: 3px solid var(--signal);
+      padding: 0.4em 0.8em;
+      margin: 0.6em 0;
+    }
+    .stepper select {
+      font-size: 0.75em;
+    }
+    .stepper #stepstate {
+      margin-top: 0.35em;
+      color: var(--signal);
+    }
+    .focus-row {
+      background: #20393b;
+    }
+    .spacer {
+      flex: 1;
+    }
+    select {
+      max-width: 100%;
+    }
+    [hidden] {
+      display: none !important;
+    }
+    @media (max-width: 600px) {
+      body {
+        word-break: normal;
+      }
+      header {
+        font-size: 13px;
+      }
+      article {
+        min-height: 48vh;
+      }
+      h1 {
+        font-size: 32px;
+      }
+      td,
+      th {
+        padding: 0.4em 0.28em;
+      }
+      footer {
+        gap: 0.35em;
+      }
+      .spacer {
+        display: none;
+      }
+      .math {
+        overflow-wrap: anywhere;
+      }
+    }
+    @media print {
+      @page {
+        size: landscape;
+        margin: 15mm;
+      }
+      body {
+        background: white;
+        color: black;
+        font-size: 16pt;
+      }
+      article[hidden] {
+        display: block !important;
+      }
+      article {
+        min-height: 0;
+        break-after: page;
+      }
+      article:last-child {
+        break-after: auto;
+      }
+      header,
+      footer,
+      #notes {
+        display: none !important;
+      }
+      main {
+        max-width: none;
+        padding: 0;
+      }
+      h1 {
+        font-size: 30pt;
+      }
+      .math,
+      .formula,
+      th,
+      .tokens span:last-child {
+        color: #134b52;
+      }
+      pre {
+        background: #f3f5f5;
+        color: black;
+      }
+      td,
+      th {
+        border-color: #899;
+      }
+      .scroll,
+      pre {
+        overflow: visible;
+      }
+      input[type="range"] {
+        display: none;
+      }
+    }
+  </style>
+  <header>
+    <a href="../">← 5장 공부 노트</a><span>CUDA 프로그래밍 · 2026.12.08</span>
+  </header>
+  <main>
+    <article id="s1" aria-labelledby="h1" data-time="0–1분">
+      <h1 id="h1" tabindex="-1">트랜스포머는 다음 토큰을 어떻게 계산할까</h1>
+      <div class="cover">
+        <p class="lead">CUDA에서 따라가는 추론 한 스텝</p>
+        <div class="tokens">
+          <span>A</span><span>B</span><span>C</span><span>?</span>
+        </div>
+        <p>CUDA for LLMs · 5장<br />김영주</p>
+      </div>
+      <template
+        >첫 화면의 A, B, C는 각각 토큰 하나다. C 다음에 D가 선택됐다고 하자. D를
+        입력할 때 앞의 세 토큰은 다시 무엇을 계산하고, 무엇을 메모리에서 읽을까?
+        끝에서 같은 질문을 다시 받는다. 발표 기준 33분.</template
+      >
+    </article>
+    <article id="s2" aria-labelledby="h2" data-time="1–3분" hidden>
+      <h1 id="h2" tabindex="-1">ReLU 한 원소에서 내적 한 행으로</h1>
+      <div class="math">y = Wx</div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>연산</th>
+              <th>출력 하나를 계산할 때 읽는 값</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ReLU</td>
+              <td>입력 x[i] 하나</td>
+            </tr>
+            <tr>
+              <td>선형층</td>
+              <td>가중치 W의 한 행과 입력 벡터 x 전체</td>
+            </tr>
+            <tr>
+              <td>어텐션</td>
+              <td>질의와 여러 위치의 키, 가중합에 쓰는 값</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <template
+        >1주차 커널에서 thread i가 자기 입력의 부호만 읽었다는 점을 상기한다.
+        W의 행이 [2, −1, 3], x가 [1, 2, 1]이면 곱한 값 2, −2, 3을 더해 3이다.
+        출력을 병렬로 나눠도 같은 출력에 기여하는 값은 모아야 한다.</template
+      >
+    </article>
+    <article id="s3" aria-labelledby="h3" data-time="3–6분" hidden>
+      <h1 id="h3" tabindex="-1">토큰이 통과하는 디코더 블록</h1>
+      <p class="lead">
+        토큰·위치 임베딩 → 디코더 블록 × L → 마지막 정규화 → 어휘별 logits
+      </p>
+      <pre><code>u = x + Attention(LayerNorm(x))
+y = u + FFN(LayerNorm(u))</code></pre>
+      <p>
+        교재 Listing 5.14의 pre-LN 구성. 어텐션은 위치 간 정보를 섞고, FFN은 각
+        위치에서 채널을 변환한다.
+      </p>
+      <template
+        >B는 배치, T는 토큰 수, C는 임베딩 폭이다. 예를 들어 C=128을 4개 헤드로
+        나누면 헤드 폭은 32다. 잔차를 더하려면 블록 입출력의 폭 C를 맞춘다.
+        마지막 위치의 logits에서 한 토큰을 고르는 것과 FFN의 계산은 다른
+        단계다.</template
+      >
+    </article>
+    <article id="s4" aria-labelledby="h4" data-time="6–9분" hidden>
+      <h1 id="h4" tabindex="-1">현재 질의가 읽을 수 있는 위치</h1>
+      <div class="math">softmax(QKᵀ / √d + mask) V</div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>질의 ∖ 키</th>
+              <th>A</th>
+              <th>B</th>
+              <th>C</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>A</td>
+              <td>허용</td>
+              <td>차단</td>
+              <td>차단</td>
+            </tr>
+            <tr>
+              <td>B</td>
+              <td>허용</td>
+              <td>허용</td>
+              <td>차단</td>
+            </tr>
+            <tr>
+              <td>C</td>
+              <td>허용</td>
+              <td>허용</td>
+              <td>허용</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>행마다 가중치 합은 1. C의 은닉 상태로 다음 토큰을 예측한다.</p>
+      <template
+        >C가 과거의 B에 주는 점수는 q_C와 k_B의 내적으로 구한다. 미래 위치는
+        softmax 전에 차단한다. 점수와 가중합의 V를 구분한다. 모든 입력을 이미
+        알고 있는 프롬프트에서는 인과 마스크를 건 상태로 여러 질의 행을 함께
+        계산할 수 있다.</template
+      >
+    </article>
+    <article id="s5" aria-labelledby="h5" data-time="9–12분" hidden>
+      <h1 id="h5" tabindex="-1">프리필 출력으로 D를 고른다</h1>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>호출</th>
+              <th>입력</th>
+              <th>계산 후 캐시</th>
+              <th>마지막 logits로 선택</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>prefill</td>
+              <td>A B C</td>
+              <td>A B C</td>
+              <td>D</td>
+            </tr>
+            <tr>
+              <td>decode 1</td>
+              <td>D</td>
+              <td>A B C D</td>
+              <td>E</td>
+            </tr>
+            <tr>
+              <td>decode 2</td>
+              <td>E</td>
+              <td>A B C D E</td>
+              <td>F</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="stepper">
+        <label for="step">호출 선택 </label
+        ><select id="step">
+          <option value="0">프리필</option>
+          <option value="1">첫 디코드</option>
+          <option value="2">두 번째 디코드</option>
+        </select>
+        <div id="stepstate" aria-live="polite">
+          캐시 0칸 → 3칸 · A B C 입력 · D 선택
+        </div>
+      </div>
+      <template
+        >D가 선택된 순간에는 D의 K와 V가 아직 없다. 디코더에 D를 입력해 그 층의
+        K와 V를 계산할 때 추가한다. A, B, C 전체를 프리필한 경로에서는 C를 다시
+        넣으면 같은 토큰이 중복된다. 프롬프트 길이 1에서도 첫 출력은 같은
+        규칙으로 고른다.</template
+      >
+    </article>
+    <article id="s6" aria-labelledby="h6" data-time="12–16분" hidden>
+      <h1 id="h6" tabindex="-1">KV 캐시가 줄이는 계산과 차지하는 메모리</h1>
+      <p class="formula">
+        2 × 층 수 × 배치 × 저장 위치 수 × KV 헤드 수 × 헤드 폭 × 원소 바이트
+      </p>
+      <p>
+        일반 다중 헤드 어텐션 · 8층 · 배치 1 · KV 헤드 4 · 헤드 폭 32 · FP32
+      </p>
+      <label for="len">저장 위치 수 <output id="lenval">64</output></label
+      ><input id="len" type="range" min="1" max="64" value="64" />
+      <div id="bytes" class="math" aria-live="polite">512 KiB</div>
+      <p>
+        새 토큰에서 과거 K/V 투영을 다시 계산하는 일을 줄인다. 새 질의가 읽을
+        K/V는 문맥과 함께 늘어난다.
+      </p>
+      <template
+        >2는 K와 V 두 배열이다. 토큰 하나가 차지하는 2×8×1×4×32×4 = 8192바이트를
+        손으로 계산한다. 슬라이더를 1, 32, 64로 움직여 8, 256, 512 KiB를
+        비교한다. 이 값은 저장된 위치에 해당하는 원시 데이터의 크기다. 미리
+        64칸을 예약한 구현은 유효 길이가 짧아도 예약량이 그대로일 수 있다.
+        <a
+          href="https://huggingface.co/docs/transformers/en/cache_explanation"
+          target="_blank"
+          rel="noreferrer"
+          >Transformers · How caching works</a
+        ></template
+      >
+    </article>
+    <article id="s7" aria-labelledby="h7" data-time="16–19분" hidden>
+      <h1 id="h7" tabindex="-1">한 위치의 선형층은 GEMV로 볼 수 있다</h1>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>배치 1, 선형층 W[M,N]</th>
+              <th>입력</th>
+              <th>출력</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>프롬프트 T개 위치</td>
+              <td>X[T,N]</td>
+              <td>XWᵀ → [T,M]</td>
+            </tr>
+            <tr>
+              <td>새 토큰 한 위치</td>
+              <td>x[N]</td>
+              <td>Wx → [M]</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <pre><code>W = [[2, -1, 3], [0, 4, 1]]
+x = [1, 2, 1]
+Wx = [3, 9]</code></pre>
+      <template
+        >입력이 한 줄이면 같은 가중치 원소를 여러 위치에 나눠 쓸 기회가
+        줄어든다. 큰 FP32 행렬이 주된 읽기 비용이고 FMA를 2 FLOP로 셀 때, 약 2MN
+        FLOP 대 4MN바이트다. 입력·출력을 무시한 근사로 약 0.5 FLOP/B다. 실제
+        병목은 프로파일러로 확인한다. 여러 요청을 동시에 모으면 GEMM의 재사용
+        기회가 생긴다.</template
+      >
+    </article>
+    <article id="s8" aria-labelledby="h8" data-time="19–22분" hidden>
+      <h1 id="h8" tabindex="-1">전치한 뷰에서 주소 계산하기</h1>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>FP32 텐서</th>
+              <th>shape</th>
+              <th>stride (원소 단위)</th>
+              <th>(1, 0)의 원소 오프셋</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>행 우선 A</td>
+              <td>(2, 3)</td>
+              <td>(3, 1)</td>
+              <td>3</td>
+            </tr>
+            <tr>
+              <td>A.T 뷰</td>
+              <td>(3, 2)</td>
+              <td>(1, 3)</td>
+              <td>1</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <pre><code>offset = row * stride_row + col * stride_col</code></pre>
+      <p>
+        행 우선으로 작성한 커널에 뷰를 넘길 때는 입력 stride를 처리하거나,
+        경계에서 연속 배열을 준비한다.
+      </p>
+      <template
+        >기저 배열 [0,1,2,3,4,5]를 펼쳐 놓고 전치 후 논리적 첫 행이 [0,3]임을
+        보인다. 식은 저장소 시작점을 기준으로 한 예이고, 슬라이스에는 시작
+        오프셋도 있다. contiguous()가 복사를 유발한다면 복사 비용을 포함해 경로
+        전체를 측정한다.
+        <a
+          href="https://docs.pytorch.org/docs/stable/tensor_view.html"
+          target="_blank"
+          rel="noreferrer"
+          >PyTorch · Tensor Views</a
+        ></template
+      >
+    </article>
+    <article id="s9" aria-labelledby="h9" data-time="22–25분" hidden>
+      <h1 id="h9" tabindex="-1">MoE 라우터가 고르는 두 전문가</h1>
+      <div class="math">[0.14, 0.41, 0.40, 0.05]</div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>단계</th>
+              <th>한 토큰의 경로</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Top-2</td>
+              <td>전문가 1과 2 선택 (0부터 센 ID)</td>
+            </tr>
+            <tr>
+              <td>선택 후 재정규화하는 설계</td>
+              <td>0.41/0.81, 0.40/0.81로 가중합</td>
+            </tr>
+            <tr>
+              <td>출력</td>
+              <td>같은 위치의 표현을 두 전문가 결과로 갱신</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        이 top-k의 후보는 전문가다. 생성 단계에서 토큰을 고르는 후보는 어휘다.
+      </p>
+      <template
+        >실제 교재 예에서는 전문가 8개 중 2개를 활성화한다. 여기의 4개 점수는
+        계산용 예시다. 화면의 2위와 3위는 0.40과 0.14다. 별도 입력 [0.1400,
+        0.4300, 0.2151, 0.2149]에서는 2·3위 차이가 0.0002다. 이처럼 경계에 있는
+        순위 2·3이 가깝다면 근소한 오차도 라우팅을 바꿀 수 있다. 최종 문장이
+        다를 때 처음 갈라진 위치의 라우터 점수·ID·전문가 출력을
+        확인한다.</template
+      >
+    </article>
+    <article id="s10" aria-labelledby="h10" data-time="25–28분" hidden>
+      <h1 id="h10" tabindex="-1">파이토치와 CUDA 결과를 대조하는 순서</h1>
+      <p class="lead">Python 호출 → C++ 바인딩 → CUDA 커널 → 출력 텐서</p>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>범위</th>
+              <th>고정할 것</th>
+              <th>비교할 것</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>커널</td>
+              <td>동일 입력, dtype, shape, stride</td>
+              <td>원소별 오차와 허용 오차</td>
+            </tr>
+            <tr>
+              <td>캐시</td>
+              <td>동일 가중치·위치·토큰열</td>
+              <td>전체 재계산과 캐시 경로의 마지막 logits</td>
+            </tr>
+            <tr>
+              <td>생성</td>
+              <td>평가 모드·동일한 선택 규칙</td>
+              <td>첫 불일치 토큰과 해당 단계의 값</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <template
+        >하나의 GPU 텐서에서 값과 배치를 동시에 바꾸면 차이를 해석하기 어렵다.
+        작은 입력과 결정적 선택 규칙부터 시작한다. 첫 토큰이 일치해도 다음
+        decode 위치나 캐시 축이 틀릴 수 있다. 서로 다른 경로를 검증할 때 입력
+        토큰을 같게 고정하면 이후 샘플링 차이가 비교에 끼지 않는다.
+        <a
+          href="https://github.com/Infatoshi/book.cu/tree/08b406c47fb46f7b2d76bd77b2eaa08958a68f69/3_transformer"
+          target="_blank"
+          rel="noreferrer"
+          >저자 코드 · 3_transformer</a
+        ></template
+      >
+    </article>
+    <article id="s11" aria-labelledby="h11" data-time="28–31분" hidden>
+      <h1 id="h11" tabindex="-1">첫 토큰 지연과 디코드 처리율</h1>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>교재 그림 5.12 인용</th>
+              <th>첫 토큰까지</th>
+              <th>디코드 처리율</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PyTorch</td>
+              <td>12 ms</td>
+              <td>95 tok/s</td>
+            </tr>
+            <tr>
+              <td>기초 CUDA 커널</td>
+              <td>16 ms</td>
+              <td>85 tok/s</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        교재에 실린 비교값. 첫 토큰이 나오는 시각과 그 뒤의 토큰 간격은 다른
+        질문에 답한다.
+      </p>
+      <template
+        >같은 입력 길이, 배치, 모델·정밀도와 생성 길이를 맞춘다. TTFT는 측정
+        시작에서 첫 토큰 가용 시각까지이며 큐·전처리를 포함하는지는 경계를
+        명시한다. 뒤쪽 토큰의 처리율은 첫 토큰 뒤에 나온 수를 그 구간의 시간으로
+        나눈다. GPU 커널 구간은 CUDA 이벤트를, 사용자 지연은 동기화 경계를 갖춘
+        wall clock을 사용한다. 표는 교재 측정이고 이 발표자의 GPU 벤치마크가
+        아니다.
+        <a
+          href="https://www.manning.com/books/cuda-for-llms"
+          target="_blank"
+          rel="noreferrer"
+          >Elliot Arledge · CUDA for LLMs</a
+        ></template
+      >
+    </article>
+    <article id="s12" aria-labelledby="h12" data-time="31–33분" hidden>
+      <h1 id="h12" tabindex="-1">6장에서 추적할 메모리 접근</h1>
+      <pre><code>lane 0 → W[0, j]  ·  lane 1 → W[1, j]
+row-major W[M,N] → 두 주소 차이 = N개 원소</code></pre>
+      <p class="lead">
+        한 워프의 스레드가 같은 행의 이웃 열을 읽게 하면, 행의 합은 어떻게
+        완성할까?
+      </p>
+      <p>6장에서 메모리 접근의 병합과 병렬 reduction을 연결한다.</p>
+      <template
+        >한 스레드가 행 하나를 처리하면 각 스레드의 접근은 연속적일 수 있지만,
+        같은 명령에서 이웃 lane들이 보는 주소는 오히려 떨어져 있다. 답을 먼저
+        들은 뒤 인접 열 접근과 부분합을 설명할 6장으로 넘긴다. 5장만 연습할 때는
+        prefill → 첫 토큰 → 첫 decode를 화면 없이 말해 본다.
+        <a
+          href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html"
+          target="_blank"
+          rel="noreferrer"
+          >NVIDIA · Nsight Compute</a
+        ></template
+      >
+    </article>
+  </main>
+  <footer>
+    <button id="prev">← 이전</button><span id="count" aria-live="polite"></span
+    ><button id="next">다음 →</button><span class="spacer"></span
+    ><select id="choice" aria-label="슬라이드 선택">
+      <option value="1">1. 트랜스포머는 다음 토큰을 어떻게 계산할까</option>
+      <option value="2">2. ReLU 한 원소에서 내적 한 행으로</option>
+      <option value="3">3. 토큰이 통과하는 디코더 블록</option>
+      <option value="4">4. 현재 질의가 읽을 수 있는 위치</option>
+      <option value="5">5. 프리필 출력으로 D를 고른다</option>
+      <option value="6">6. KV 캐시가 줄이는 계산과 차지하는 메모리</option>
+      <option value="7">7. 한 위치의 선형층은 GEMV로 볼 수 있다</option>
+      <option value="8">8. 전치한 뷰에서 주소 계산하기</option>
+      <option value="9">9. MoE 라우터가 고르는 두 전문가</option>
+      <option value="10">10. 파이토치와 CUDA 결과를 대조하는 순서</option>
+      <option value="11">11. 첫 토큰 지연과 디코드 처리율</option>
+      <option value="12">12. 6장에서 추적할 메모리 접근</option></select
+    ><button id="notesButton" aria-controls="notes" aria-expanded="false">
+      발표 메모</button
+    ><button id="full">전체 화면</button><span id="fsInfo" role="status"></span>
+  </footer>
+  <aside id="notes" hidden>
+    <strong>발표 메모</strong>
+    <div id="speaker"></div>
+  </aside>
+  <script>
+    const slides = [...document.querySelectorAll("article")];
+    const byId = (id) => document.getElementById(id);
+    let current = 1;
+    function showFromHash() {
+      const match = location.hash.match(/^#s([0-9]+)$/);
+      const n = match ? Number(match[1]) : 1;
+      current = Math.min(slides.length, Math.max(1, n));
+      slides.forEach((el, i) => {
+        el.hidden = i !== current - 1;
+      });
+      const slide = slides[current - 1];
+      byId("choice").value = String(current);
+      byId("count").textContent =
+        current + " / " + slides.length + " · " + slide.dataset.time;
+      byId("prev").disabled = current === 1;
+      byId("next").disabled = current === slides.length;
+      byId("speaker").replaceChildren(
+        slide.querySelector("template").content.cloneNode(true),
+      );
+    }
+    function jump(i) {
+      location.hash = "s" + Math.max(1, Math.min(slides.length, i));
+    }
+    byId("prev").onclick = () => jump(current - 1);
+    byId("next").onclick = () => jump(current + 1);
+    byId("choice").onchange = (e) => jump(Number(e.target.value));
+    byId("notesButton").onclick = () => {
+      const n = byId("notes");
+      n.hidden = !n.hidden;
+      byId("notesButton").setAttribute("aria-expanded", String(!n.hidden));
+    };
+    byId("full").onclick = async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else await document.documentElement.requestFullscreen();
+      } catch {
+        byId("fsInfo").textContent = "브라우저 전체 화면 메뉴를 이용하세요.";
+      }
+    };
+    if (!document.fullscreenEnabled) byId("full").hidden = true;
+    function traceStep() {
+      const n = Number(byId("step").value);
+      const states = [
+        "캐시 0칸 → 3칸 · A B C 입력 · D 선택",
+        "캐시 3칸 → 4칸 · 위치 3에 D 입력 · E 선택",
+        "캐시 4칸 → 5칸 · 위치 4에 E 입력 · F 선택",
+      ];
+      byId("stepstate").textContent = states[n];
+      document
+        .querySelectorAll("#s5 tbody tr")
+        .forEach((row, i) => row.classList.toggle("focus-row", i === n));
+    }
+    byId("step").onchange = traceStep;
+    traceStep();
+    byId("len").oninput = (e) => {
+      const t = Number(e.target.value);
+      byId("lenval").textContent = String(t);
+      byId("bytes").textContent = 8 * t + " KiB";
+    };
+    document.addEventListener("keydown", (e) => {
+      if (
+        e.altKey ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        ["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)
+      )
+        return;
+      if (["ArrowRight", "ArrowLeft", "Home", "End"].includes(e.key)) {
+        e.preventDefault();
+        jump(
+          e.key === "ArrowRight"
+            ? current + 1
+            : e.key === "ArrowLeft"
+              ? current - 1
+              : e.key === "Home"
+                ? 1
+                : slides.length,
+        );
+      }
+    });
+    window.addEventListener("hashchange", () => {
+      showFromHash();
+      document.getElementById("h" + current).focus({ preventScroll: true });
+      window.scrollTo(0, 0);
+    });
+    showFromHash();
+  </script>
+</html>

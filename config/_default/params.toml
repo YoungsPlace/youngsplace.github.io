@@ -4,7 +4,7 @@ autoSwitchAppearance = false
 enableSearch = true
 enableCodeCopy = true
 disableTextInHeader = false
-mainSections = ["ncp-aai", "agentic-ai", "nca-amad", "local-ai-models-on-a-mac", "notes", "papers", "journal", "books"]
+mainSections = ["cuda-cpu-programming", "ncp-aai", "agentic-ai", "nca-amad", "local-ai-models-on-a-mac", "notes", "papers", "journal", "books"]
 [header]
 layout = "fixed-fill-blur"
 [footer]

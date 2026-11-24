@@ -3,6 +3,10 @@ name = "Local AI Models on a Mac"
 pageRef = "local-ai-models-on-a-mac"
 weight = 5
 [[main]]
+name = "CUDA"
+pageRef = "cuda-cpu-programming"
+weight = 6
+[[main]]
 name = "NVIDIA NCA-AMAD"
 pageRef = "nca-amad"
 weight = 7
