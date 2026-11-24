@@ -1,0 +1,10 @@
+$ .venv/bin/python --version
+Python 3.13.18
+$ .venv/bin/python decode_trace.py
+prefix=3 cache_slots=3 next_id=3
+prefix=4 cache_slots=4 next_id=3
+prefix=5 cache_slots=5 next_id=2
+full   kv_rows=12 qk_pairs=31
+cached kv_rows=5 qk_pairs=15
+max_abs_logit_diff=0.00e+00
+generated [3, 3, 2]
